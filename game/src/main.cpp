@@ -8,7 +8,7 @@ int main() {
         return 1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("Hello world", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
+    SDL_Window* window = SDL_CreateWindow("Hello world", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
     if (!window) {
         std::cerr << "SDL window creation failded: " << SDL_GetError() << std::endl;
         SDL_Quit();
