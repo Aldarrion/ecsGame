@@ -1,8 +1,44 @@
 #include "SDL2/SDL.h"
 
+#include "ecs.h"
+#include "math/vec2.h"
+
 #include <iostream>
 
-int main() {
+namespace eg {
+
+struct RendererComponent {
+    SDL_Renderer* Renderer;
+};
+
+struct PositionComponent {
+    Vec2 Pos;
+};
+
+struct SpriteComponent {
+    float Dummy;
+};
+
+void initGame() {
+    auto [entity, pos, sprite] = ECS::reg().create<PositionComponent, SpriteComponent>();
+    pos.Pos = Vec2(100, 50);
+}
+
+namespace spriteRenderSystem {
+void update() {
+    auto rc = ECS::reg().raw<RendererComponent>();
+
+    SDL_RenderClear(rc->Renderer);
+
+    ECS::reg().view<PositionComponent, SpriteComponent>().each([](auto entity, auto& pos, auto& sprite) {
+        std::cout << pos.Pos.x() << " " << pos.Pos.y() << std::endl;
+    });
+
+    SDL_RenderPresent(rc->Renderer);
+}
+}
+
+int runGame() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "SDL init failded: " << SDL_GetError() << std::endl;
         return 1;
@@ -23,6 +59,11 @@ int main() {
         return 1;
     }
 
+    initGame();
+
+    auto rendererEntity = eg::ECS::reg().create();
+    ECS::reg().get_or_assign<eg::RendererComponent>(rendererEntity).Renderer = renderer;
+
     SDL_Event event;
     bool quit = false;
 
@@ -35,11 +76,18 @@ int main() {
             }
         }
 
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
+        spriteRenderSystem::update();
     }
-
     std::cout << "Done" << std::endl;
 
     return 0;
 }
+
+}
+
+int main() {
+    int result = eg::runGame();
+
+    return result;
+}
+
