@@ -15,6 +15,7 @@ file(GLOB_RECURSE GameSrc "game/src/*.cpp")
 file(GLOB_RECURSE GameHeaders "game/include/*.h")
 
 add_executable(ecsGame ${GameSrc} ${GameHeaders})
-target_link_libraries(ecsGame "/usr/lib/x86_64-linux-gnu/libSDL2.so")
+target_link_libraries(ecsGame "/usr/lib/x86_64-linux-gnu/libSDL2.so" "/usr/lib/x86_64-linux-gnu/libSDL2_image.so")
 
 set_property(TARGET ecsGame PROPERTY CXX_STANDARD 17)
+set_property(TARGET ecsGame PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "assets")
