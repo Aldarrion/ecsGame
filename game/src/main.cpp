@@ -14,6 +14,10 @@ struct RendererComponent {
     SDL_Renderer* Renderer;
 };
 
+struct RenderOrder {
+    int Order;
+};
+
 struct PositionComponent {
     Vec2 Pos;
 };
@@ -54,9 +58,10 @@ void initMap() {
             if (!texture)
                 continue;
 
-            auto [ent, pos, sprite] = ECS::reg().create<PositionComponent, SpriteComponent>();
-            pos.Pos = Vec2(x * TILE_SIZE, y * TILE_SIZE);
+            auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+            pos.Pos = Vec2(x, y);
             sprite.Texture = texture;
+            order.Order = 0;
         }
     }
 
@@ -65,19 +70,29 @@ void initMap() {
 void initGame() {
     initMap();
 
-    auto [entity, pos, sprite] = ECS::reg().create<PositionComponent, SpriteComponent>();
-    pos.Pos = Vec2(100, 50);
+    auto [entity, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+    pos.Pos = Vec2(5, 5);
+    sprite.Texture = loadTexture("textures/player.png");
+    SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
+    order.Order = 10;
+
+    ECS::reg().sort<SpriteComponent>([](const entt::entity lhs, const entt::entity rhs) {
+        return ECS::reg().get<RenderOrder>(lhs).Order < ECS::reg().get<RenderOrder>(rhs).Order;
+    });
 }
 
 namespace spriteRenderSystem {
 void update() {
     auto rc = ECS::reg().raw<RendererComponent>();
 
+    SDL_SetRenderDrawColor(rc->Renderer, 128, 128, 128, 255);
     SDL_RenderClear(rc->Renderer);
 
-    ECS::reg().view<PositionComponent, SpriteComponent>().each([render = rc->Renderer](auto entity, auto& pos, auto& sprite) {
-        SDL_Rect dst{ int(pos.Pos.x()), int(pos.Pos.y()), 64, 64 };
-        SDL_RenderCopy(render, sprite.Texture, nullptr, &dst);
+    ECS::reg().view<SpriteComponent, PositionComponent>().each([render = rc->Renderer](auto entity, auto& sprite, auto& pos) {
+        SDL_Rect dst{ int(pos.Pos.x) * 64, int(pos.Pos.y) * 64, 64, 64 };
+        if (SDL_RenderCopy(render, sprite.Texture, nullptr, &dst) != 0) {
+            std::cerr << SDL_GetError() << std::endl;
+        }
     });
 
     SDL_RenderPresent(rc->Renderer);
@@ -85,6 +100,8 @@ void update() {
 }
 
 int runGame() {
+    std::cout << "Game started" << std::endl;
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "SDL init failded: " << SDL_GetError() << std::endl;
         return 1;
