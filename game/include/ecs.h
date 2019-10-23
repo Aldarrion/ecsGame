@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entt/entity/registry.hpp"
+#include "entt/entity/helper.hpp"
 
 namespace eg {
 class ECS {

@@ -26,6 +26,13 @@ struct SpriteComponent {
     SDL_Texture* Texture;
 };
 
+struct KeyboardStateComponent {
+    bool AUp{ false };
+    bool SUp{ false };
+    bool DUp{ false };
+    bool WUp{ false };
+};
+
 SDL_Texture* loadTexture(const std::string& path) {
     // TODO(pavel): Maintain a texture registry - do not load duplicate textures
     SDL_Surface* loadingSurface = IMG_Load(path.c_str());
@@ -70,7 +77,8 @@ void initMap() {
 void initGame() {
     initMap();
 
-    auto [entity, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+    auto [playerEntity, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+    ECS::reg().assign<entt::tag<"player"_hs>>(playerEntity);
     pos.Pos = Vec2(5, 5);
     sprite.Texture = loadTexture("textures/player.png");
     SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
@@ -88,7 +96,7 @@ void update() {
     SDL_SetRenderDrawColor(rc->Renderer, 128, 128, 128, 255);
     SDL_RenderClear(rc->Renderer);
 
-    ECS::reg().view<SpriteComponent, PositionComponent>().each([render = rc->Renderer](auto entity, auto& sprite, auto& pos) {
+    ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, auto& sprite, auto& pos) {
         SDL_Rect dst{ int(pos.Pos.x) * 64, int(pos.Pos.y) * 64, 64, 64 };
         if (SDL_RenderCopy(render, sprite.Texture, nullptr, &dst) != 0) {
             std::cerr << SDL_GetError() << std::endl;
@@ -96,6 +104,36 @@ void update() {
     });
 
     SDL_RenderPresent(rc->Renderer);
+}
+}
+
+namespace inputSystem {
+void keyUp(const SDL_KeyboardEvent& event) {
+    auto k = ECS::reg().raw<KeyboardStateComponent>();
+    switch (event.keysym.sym)
+    {
+        case SDLK_a: k->AUp = true; break;
+        case SDLK_s: k->SUp = true; break;
+        case SDLK_d: k->DUp = true; break;
+        case SDLK_w: k->WUp = true; break;
+    }
+}
+
+void update() {
+    auto k = ECS::reg().raw<KeyboardStateComponent>();
+    auto pw = ECS::reg().view<entt::tag<"player"_hs>, PositionComponent>();
+    auto& pos = pw.get<PositionComponent>(*pw.begin());
+
+    if (k->AUp)
+        pos.Pos.x -= 1;
+    else if (k->DUp)
+        pos.Pos.x += 1;    
+    else if (k->WUp)
+        pos.Pos.y -= 1;
+    else if (k->SUp)
+        pos.Pos.y += 1;
+
+    *k = {};
 }
 }
 
@@ -133,6 +171,8 @@ int runGame() {
 
     initGame();
 
+    ECS::reg().create<KeyboardStateComponent>();
+
     SDL_Event event;
     bool quit = false;
 
@@ -142,9 +182,15 @@ int runGame() {
                 case SDL_QUIT:
                     quit = true;
                     break;
+                case SDL_KEYDOWN:
+                    break;
+                case SDL_KEYUP:
+                    inputSystem::keyUp(event.key);
+                    break;
             }
         }
 
+        inputSystem::update();
         spriteRenderSystem::update();
     }
     std::cout << "Done" << std::endl;
