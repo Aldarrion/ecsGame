@@ -14,9 +14,20 @@ public:
 
     Vec2Int() = default;
     constexpr Vec2Int(float x, float y) : x(x), y(y) {}
+
+    bool operator==(Vec2Int rhs) const {
+        return x == rhs.x && y == rhs.y;
+    }
+
+    Vec2Int& operator+=(Vec2Int rhs) {
+        x += rhs.x;
+        y += rhs.y;
+        return *this;
+    }
+
+    Vec2Int operator+(Vec2Int rhs) const {
+        return Vec2Int(x + rhs.x, y + rhs.y);
+    }
 };
 
-bool operator==(Vec2Int lhs, Vec2Int rhs) {
-    return lhs.x == rhs.x && lhs.y == rhs.y;
-}
 }
