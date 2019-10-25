@@ -19,7 +19,7 @@ struct RenderOrder {
 };
 
 struct PositionComponent {
-    Vec2 Pos;
+    Vec2Int Pos;
 };
 
 struct SpriteComponent {
@@ -27,11 +27,26 @@ struct SpriteComponent {
 };
 
 struct KeyboardStateComponent {
-    bool AUp{ false };
-    bool SUp{ false };
-    bool DUp{ false };
-    bool WUp{ false };
+    bool ADown{ false };
+    bool SDown{ false };
+    bool DDown{ false };
+    bool WDown{ false };
 };
+
+struct MapComponent {
+    std::vector<Vec2Int> Walls;
+    std::vector<Vec2Int> Doors;
+};
+
+bool isWallAt(const MapComponent& map, Vec2Int pos) {
+    for (int i = 0; i < map.Walls.size(); ++i) {
+        if (map.Walls[i] == pos) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 SDL_Texture* loadTexture(const std::string& path) {
     // TODO(pavel): Maintain a texture registry - do not load duplicate textures
@@ -53,20 +68,24 @@ void initMap() {
     constexpr int HEIGHT = 9;
     constexpr int TILE_SIZE = 64;
 
+    auto [mapEnt, mapComp] = ECS::reg().create<MapComponent>();
+
     for (int y = 0; y < HEIGHT; ++y)
     {
         for (int x = 0; x < WIDTH; ++x)
         {
             std::string texturePath = "textures/floor.png";
-            if (x == 0 || y == 0 || x == WIDTH - 1 || y == HEIGHT - 1)
+            if (x == 0 || y == 0 || x == WIDTH - 1 || y == HEIGHT - 1) {
                 texturePath = "textures/wall.png";
+                mapComp.Walls.emplace_back(x, y);
+            }
 
             SDL_Texture* texture = loadTexture(texturePath);
             if (!texture)
                 continue;
 
             auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-            pos.Pos = Vec2(x, y);
+            pos.Pos = Vec2Int(x, y);
             sprite.Texture = texture;
             order.Order = 0;
         }
@@ -79,7 +98,7 @@ void initGame() {
 
     auto [playerEntity, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
     ECS::reg().assign<entt::tag<"player"_hs>>(playerEntity);
-    pos.Pos = Vec2(5, 5);
+    pos.Pos = Vec2Int(5, 5);
     sprite.Texture = loadTexture("textures/player.png");
     SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
     order.Order = 10;
@@ -108,14 +127,14 @@ void update() {
 }
 
 namespace inputSystem {
-void keyUp(const SDL_KeyboardEvent& event) {
+void keyDown(const SDL_KeyboardEvent& event) {
     auto k = ECS::reg().raw<KeyboardStateComponent>();
     switch (event.keysym.sym)
     {
-        case SDLK_a: k->AUp = true; break;
-        case SDLK_s: k->SUp = true; break;
-        case SDLK_d: k->DUp = true; break;
-        case SDLK_w: k->WUp = true; break;
+        case SDLK_a: k->ADown = true; break;
+        case SDLK_s: k->SDown = true; break;
+        case SDLK_d: k->DDown = true; break;
+        case SDLK_w: k->WDown = true; break;
     }
 }
 
@@ -123,15 +142,21 @@ void update() {
     auto k = ECS::reg().raw<KeyboardStateComponent>();
     auto pw = ECS::reg().view<entt::tag<"player"_hs>, PositionComponent>();
     auto& pos = pw.get<PositionComponent>(*pw.begin());
+    const auto map = ECS::reg().raw<MapComponent>();
 
-    if (k->AUp)
-        pos.Pos.x -= 1;
-    else if (k->DUp)
-        pos.Pos.x += 1;    
-    else if (k->WUp)
-        pos.Pos.y -= 1;
-    else if (k->SUp)
-        pos.Pos.y += 1;
+    Vec2Int newPos = pos.Pos;
+    if (k->ADown)
+        newPos.x -= 1;
+    else if (k->DDown)
+        newPos.x += 1;    
+    else if (k->WDown)
+        newPos.y -= 1;
+    else if (k->SDown)
+        newPos.y += 1;
+
+    if (!isWallAt(*map, newPos)) {
+        pos.Pos = newPos;
+    }
 
     *k = {};
 }
@@ -183,9 +208,9 @@ int runGame() {
                     quit = true;
                     break;
                 case SDL_KEYDOWN:
+                    inputSystem::keyDown(event.key);
                     break;
                 case SDL_KEYUP:
-                    inputSystem::keyUp(event.key);
                     break;
             }
         }

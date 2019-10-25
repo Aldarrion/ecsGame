@@ -1,18 +1,22 @@
 #pragma once
 
 namespace eg {
-class Vec2 {
+class Vec2Int {
 public:
     union {
-        float v[2];
+        int v[2];
         struct {
-            float x, y;
+            int x, y;
         };
     };
 
-    constexpr static Vec2 ZERO() { return Vec2(0, 0); }
+    constexpr static Vec2Int ZERO() { return Vec2Int(0, 0); }
 
-    Vec2() = default;
-    constexpr Vec2(float x, float y) : x(x), y(y) {}
+    Vec2Int() = default;
+    constexpr Vec2Int(float x, float y) : x(x), y(y) {}
 };
+
+bool operator==(Vec2Int lhs, Vec2Int rhs) {
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
 }
