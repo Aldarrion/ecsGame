@@ -13,7 +13,7 @@ public:
     constexpr static Vec2Int ZERO() { return Vec2Int(0, 0); }
 
     Vec2Int() = default;
-    constexpr Vec2Int(float x, float y) : x(x), y(y) {}
+    constexpr Vec2Int(int x, int y) : x(x), y(y) {}
 
     bool operator==(Vec2Int rhs) const {
         return x == rhs.x && y == rhs.y;
