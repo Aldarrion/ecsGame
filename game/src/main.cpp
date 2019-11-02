@@ -84,7 +84,7 @@ int runGame() {
 
 }
 
-int main() {
+int main(int argc, char* args[]) {
     int result = eg::runGame();
 
     return result;
