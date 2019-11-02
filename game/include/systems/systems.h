@@ -18,6 +18,7 @@ static constexpr int MAP_WIDTH = 12;
 static constexpr int MAP_HEIGHT = 9;
 static constexpr int TILE_SIZE = 64;
 
+//-----------------------------------------------------------------------------
 bool isWallAt(const MapComponent& map, Vec2Int pos) {
     for (int i = 0; i < map.Walls.size(); ++i) {
         if (map.Walls[i] == pos) {
@@ -28,26 +29,37 @@ bool isWallAt(const MapComponent& map, Vec2Int pos) {
     return false;
 }
 
+//-----------------------------------------------------------------------------
 bool isInBounds(Vec2Int pos) {
     return pos.x >= 0 && pos.y >= 0 && pos.x < MAP_WIDTH && pos.y < MAP_HEIGHT;
 }
 
+//-----------------------------------------------------------------------------
 SDL_Texture* loadTexture(const std::string& path) {
-    // TODO(pavel): Maintain a texture registry - do not load duplicate textures
-    SDL_Surface* loadingSurface = IMG_Load(path.c_str());
-    if (!loadingSurface) {
-        std::cerr << "Failed loading texture " << path << ", error: " << IMG_GetError() << std::endl;
-        return nullptr;
-    }
-
-    auto render = ECS::reg().raw<RendererComponent>();
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(render->Renderer, loadingSurface);
-    SDL_FreeSurface(loadingSurface);
+    auto texReg = ECS::reg().raw<TextureRegistry>();
+    auto found = texReg->Registry.find(path);
     
-    return texture;
+    if (found != texReg->Registry.end()) {
+        return found->second;
+    } else {
+        SDL_Surface* loadingSurface = IMG_Load(path.c_str());
+        if (!loadingSurface) {
+            std::cerr << "Failed loading texture " << path << ", error: " << IMG_GetError() << std::endl;
+            return nullptr;
+        }
+
+        auto render = ECS::reg().raw<RendererComponent>();
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(render->Renderer, loadingSurface);
+        SDL_FreeSurface(loadingSurface);
+
+        texReg->Registry.emplace(path, texture);
+
+        return texture;
+    }
 }
 
 
+//-----------------------------------------------------------------------------
 namespace spriteRenderSystem {
 void update() {
     auto rc = ECS::reg().raw<RendererComponent>();
@@ -64,8 +76,16 @@ void update() {
 
     SDL_RenderPresent(rc->Renderer);
 }
+
+void cleanup() {
+    auto texReg = ECS::reg().raw<TextureRegistry>();
+    for (auto tex : texReg->Registry) {
+        SDL_DestroyTexture(tex.second);
+    }
+}
 }
 
+//-----------------------------------------------------------------------------
 namespace inputSystem {
 void keyDown(const SDL_KeyboardEvent& event) {
     auto k = ECS::reg().raw<KeyboardStateComponent>();
@@ -78,6 +98,7 @@ void keyDown(const SDL_KeyboardEvent& event) {
     }
 }
 
+//-----------------------------------------------------------------------------
 void update() {
     auto k = ECS::reg().raw<KeyboardStateComponent>();
     auto pw = ECS::reg().view<entt::tag<"player"_hs>, PositionComponent>();
@@ -102,6 +123,7 @@ void update() {
 }
 }
 
+//-----------------------------------------------------------------------------
 namespace doorSystem {
 void update() {
     auto pw = ECS::reg().view<entt::tag<"player"_hs>, PositionComponent>();
@@ -124,12 +146,20 @@ void update() {
 }
 }
 
+//-----------------------------------------------------------------------------
 namespace mapSystem {
 void update() {
     // Process all MapLoadComponents and load specified map based on the data present
     ECS::reg().view<MapLoadInfo>().each([](const auto& mapLoad){
         auto maps = ECS::reg().view<MapComponent>();
         ECS::reg().destroy(maps.begin(), maps.end());
+        
+        auto doors = ECS::reg().view<DoorComponent>();
+        ECS::reg().destroy(doors.begin(), doors.end());
+
+        auto sprites = ECS::reg().view<SpriteComponent>();
+        ECS::reg().destroy(sprites.begin(), sprites.end());
+
         auto players = ECS::reg().view<entt::tag<"player"_hs>>();
         ECS::reg().destroy(players.begin(), players.end());
         

@@ -50,6 +50,8 @@ int runGame() {
 
     auto rendererEntity = eg::ECS::reg().create();
     ECS::reg().get_or_assign<eg::RendererComponent>(rendererEntity).Renderer = renderer;
+    
+    eg::ECS::reg().create<eg::TextureRegistry>();
 
     initGame();
 
@@ -77,6 +79,9 @@ int runGame() {
         spriteRenderSystem::update();
         doorSystem::update();
     }
+
+    spriteRenderSystem::cleanup();
+
     std::cout << "Done" << std::endl;
 
     return 0;
