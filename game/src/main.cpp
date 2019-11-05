@@ -9,6 +9,7 @@
 #include "SDL2/SDL_image.h"
 
 #include <iostream>
+#include <chrono>
 
 
 namespace eg {
@@ -60,7 +61,11 @@ int runGame() {
     SDL_Event event;
     bool quit = false;
 
+    auto start = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::high_resolution_clock::now();
     while (!quit) {
+        auto dTime = std::chrono::duration<float>(end - start).count();
+        
         while(SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_QUIT:
@@ -76,8 +81,13 @@ int runGame() {
 
         mapSystem::update();
         inputSystem::update();
+        positionAnimationSystem::update(dTime);
+
         spriteRenderSystem::update();
         doorSystem::update();
+        
+        start = end;
+        end = std::chrono::high_resolution_clock::now();
     }
 
     spriteRenderSystem::cleanup();

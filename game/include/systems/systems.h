@@ -68,7 +68,7 @@ void update() {
     SDL_RenderClear(rc->Renderer);
 
     ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, auto& sprite, auto& pos) {
-        SDL_Rect dst{ int(pos.Pos.x) * 64, int(pos.Pos.y) * 64, 64, 64 };
+        SDL_Rect dst{ int(pos.Pos.x * 64), int(pos.Pos.y * 64), 64, 64 };
         if (SDL_RenderCopy(render, sprite.Texture, nullptr, &dst) != 0) {
             std::cerr << SDL_GetError() << std::endl;
         }
@@ -89,8 +89,7 @@ void cleanup() {
 namespace inputSystem {
 void keyDown(const SDL_KeyboardEvent& event) {
     auto k = ECS::reg().raw<KeyboardStateComponent>();
-    switch (event.keysym.sym)
-    {
+    switch (event.keysym.sym) {
         case SDLK_a: k->ADown = true; break;
         case SDLK_s: k->SDown = true; break;
         case SDLK_d: k->DDown = true; break;
@@ -100,33 +99,55 @@ void keyDown(const SDL_KeyboardEvent& event) {
 
 //-----------------------------------------------------------------------------
 void update() {
-    auto k = ECS::reg().raw<KeyboardStateComponent>();
-    auto pw = ECS::reg().view<entt::tag<"player"_hs>, PositionComponent>();
+    auto keyboard = ECS::reg().raw<KeyboardStateComponent>();
+    auto pw = ECS::reg().view<Player_tag, PositionComponent>();
     auto& pos = pw.get<PositionComponent>(*pw.begin());
     const auto map = ECS::reg().raw<MapComponent>();
 
-    Vec2Int newPos = pos.Pos;
-    if (k->ADown)
+    const Vec2Int intPos = Vec2Int(pos.Pos.x, pos.Pos.y);
+    Vec2Int newPos = intPos;
+    if (keyboard->ADown)
         newPos.x -= 1;
-    else if (k->DDown)
+    else if (keyboard->DDown)
         newPos.x += 1;    
-    else if (k->WDown)
+    else if (keyboard->WDown)
         newPos.y -= 1;
-    else if (k->SDown)
+    else if (keyboard->SDown)
         newPos.y += 1;
 
     if (!isWallAt(*map, newPos) && isInBounds(newPos)) {
-        pos.Pos = newPos;
+        auto playerAnimW = ECS::reg().view<Player_tag, PositionAnim>();
+        // Player does not have animation now
+        if (newPos != intPos && playerAnimW.empty()) {
+            ECS::reg().assign<PositionAnim>(*pw.begin(), Vec2(pos.Pos.x, pos.Pos.y), Vec2(newPos.x, newPos.y), 1.0f, 0.0f);
+        }
     }
 
-    *k = {};
+    *keyboard = {};
+}
+}
+
+//-----------------------------------------------------------------------------
+namespace positionAnimationSystem {
+void update(float dTime) {
+    ECS::reg().view<PositionComponent, PositionAnim>().each([dTime](auto ent, auto& pos, auto& anim) {
+        anim.CurrentTime += dTime;
+ 
+        if (anim.CurrentTime >= anim.Time) {
+            pos.Pos = anim.End;
+            ECS::reg().remove<PositionAnim>(ent);
+        } else {
+            const float t = (anim.CurrentTime / anim.Time);
+            pos.Pos = (1 - t) * anim.Start + t * anim.End;
+        }
+    });
 }
 }
 
 //-----------------------------------------------------------------------------
 namespace doorSystem {
 void update() {
-    auto pw = ECS::reg().view<entt::tag<"player"_hs>, PositionComponent>();
+    auto pw = ECS::reg().view<Player_tag, PositionComponent>();
     auto& pos = pw.get<PositionComponent>(*pw.begin());
 
     auto view = ECS::reg().view<DoorComponent, PositionComponent>();
@@ -160,20 +181,18 @@ void update() {
         auto sprites = ECS::reg().view<SpriteComponent>();
         ECS::reg().destroy(sprites.begin(), sprites.end());
 
-        auto players = ECS::reg().view<entt::tag<"player"_hs>>();
+        auto players = ECS::reg().view<Player_tag>();
         ECS::reg().destroy(players.begin(), players.end());
         
         auto [mapEnt, mapComp] = ECS::reg().create<MapComponent>();
 
-        for (int y = 0; y < MAP_HEIGHT; ++y)
-        {
-            for (int x = 0; x < MAP_WIDTH; ++x)
-            {
+        for (int y = 0; y < MAP_HEIGHT; ++y) {
+            for (int x = 0; x < MAP_WIDTH; ++x) {
                 std::string texturePath = "textures/floor.png";
                 if (x == 5 && (y == 0 || y == MAP_HEIGHT - 1)) {
                     texturePath = "textures/door.png";
                     auto [ent, pos, door] = ECS::reg().create<PositionComponent, DoorComponent>();
-                    pos.Pos = Vec2Int(x, y);
+                    pos.Pos = Vec2(x, y);
                     door.Direction = Vec2Int(0, y == 0 ? -1 : 1);
                 } else if (x == 0 || y == 0 || x == MAP_WIDTH - 1 || y == MAP_HEIGHT - 1) {
                     texturePath = "textures/wall.png";
@@ -185,15 +204,15 @@ void update() {
                     continue;
 
                 auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-                pos.Pos = Vec2Int(x, y);
+                pos.Pos = Vec2(x, y);
                 sprite.Texture = texture;
                 order.Order = 0;
             }
         }
 
         auto [playerEntity, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-        ECS::reg().assign<entt::tag<"player"_hs>>(playerEntity);
-        pos.Pos = mapLoad.PlayerPos;
+        ECS::reg().assign<Player_tag>(playerEntity);
+        pos.Pos = Vec2(mapLoad.PlayerPos);
         sprite.Texture = loadTexture("textures/player.png");
         SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
         order.Order = 10;

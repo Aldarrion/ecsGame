@@ -4,6 +4,9 @@
 #include "entt/entity/helper.hpp"
 
 namespace eg {
+
+using Player_tag = entt::tag<"player"_hs>;
+
 class ECS {
 public:
     static ECS& inst();

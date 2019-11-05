@@ -27,7 +27,7 @@ struct RenderOrder {
 
 //-----------------------------------------------------------------------------
 struct PositionComponent {
-    Vec2Int Pos;
+    Vec2 Pos;
 };
 
 //-----------------------------------------------------------------------------
@@ -58,6 +58,14 @@ struct MapComponent {
 struct MapLoadInfo {
     Vec2Int MapCoords;
     Vec2Int PlayerPos;
+};
+
+//-----------------------------------------------------------------------------
+struct PositionAnim {
+    Vec2 Start;
+    Vec2 End;
+    float Time;
+    float CurrentTime;
 };
 
 }
