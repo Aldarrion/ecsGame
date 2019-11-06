@@ -188,6 +188,7 @@ void update() {
 
         for (int y = 0; y < MAP_HEIGHT; ++y) {
             for (int x = 0; x < MAP_WIDTH; ++x) {
+                int sortOrder = 0;
                 std::string texturePath = "textures/floor.png";
                 if (x == 5 && (y == 0 || y == MAP_HEIGHT - 1)) {
                     texturePath = "textures/door.png";
@@ -206,16 +207,25 @@ void update() {
                 auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
                 pos.Pos = Vec2(x, y);
                 sprite.Texture = texture;
-                order.Order = 0;
+                order.Order = sortOrder;
             }
         }
 
-        auto [playerEntity, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-        ECS::reg().assign<Player_tag>(playerEntity);
-        pos.Pos = Vec2(mapLoad.PlayerPos);
-        sprite.Texture = loadTexture("textures/player.png");
-        SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
-        order.Order = 10;
+        {
+            auto [playerEntity, pos, sprite, order, tag] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag>();
+            pos.Pos = Vec2(mapLoad.PlayerPos);
+            sprite.Texture = loadTexture("textures/player.png");
+            SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
+            order.Order = 10;
+        }
+
+        {
+            auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+            pos.Pos = Vec2(3, 6);
+            sprite.Texture = loadTexture("textures/flowerShooter.png");
+            SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
+            order.Order = 5;
+        }
     });
 
     auto loadedView = ECS::reg().view<MapLoadInfo>();
