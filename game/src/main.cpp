@@ -81,6 +81,8 @@ int runGame() {
 
         mapSystem::update();
         inputSystem::update();
+        
+        flowerShooterSystem::update(dTime);
         positionAnimationSystem::update(dTime);
 
         spriteRenderSystem::update();

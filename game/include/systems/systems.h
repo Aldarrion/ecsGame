@@ -67,8 +67,10 @@ void update() {
     SDL_SetRenderDrawColor(rc->Renderer, 128, 128, 128, 255);
     SDL_RenderClear(rc->Renderer);
 
-    ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, auto& sprite, auto& pos) {
-        SDL_Rect dst{ int(pos.Pos.x * 64), int(pos.Pos.y * 64), 64, 64 };
+    ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, const SpriteComponent& sprite, const PositionComponent& pos) {
+        int w, h;
+        SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &w, &h);
+        SDL_Rect dst{ int(pos.Pos.x), int(pos.Pos.y), w, h };
         if (SDL_RenderCopy(render, sprite.Texture, nullptr, &dst) != 0) {
             std::cerr << SDL_GetError() << std::endl;
         }
@@ -104,12 +106,12 @@ void update() {
     auto& pos = pw.get<PositionComponent>(*pw.begin());
     const auto map = ECS::reg().raw<MapComponent>();
 
-    const Vec2Int intPos = Vec2Int(pos.Pos.x, pos.Pos.y);
+    const Vec2Int intPos = Vec2Int(pos.Pos.x / 64, pos.Pos.y / 64);
     Vec2Int newPos = intPos;
     if (keyboard->ADown)
         newPos.x -= 1;
     else if (keyboard->DDown)
-        newPos.x += 1;    
+        newPos.x += 1;
     else if (keyboard->WDown)
         newPos.y -= 1;
     else if (keyboard->SDown)
@@ -119,7 +121,7 @@ void update() {
         auto playerAnimW = ECS::reg().view<Player_tag, PositionAnim>();
         // Player does not have animation now
         if (newPos != intPos && playerAnimW.empty()) {
-            ECS::reg().assign<PositionAnim>(*pw.begin(), Vec2(pos.Pos.x, pos.Pos.y), Vec2(newPos.x, newPos.y), 1.0f, 0.0f);
+            ECS::reg().assign<PositionAnim>(*pw.begin(), pos.Pos, Vec2(newPos.x * TILE_SIZE, newPos.y * TILE_SIZE), 1.0f, 0.0f);
         }
     }
 
@@ -193,7 +195,7 @@ void update() {
                 if (x == 5 && (y == 0 || y == MAP_HEIGHT - 1)) {
                     texturePath = "textures/door.png";
                     auto [ent, pos, door] = ECS::reg().create<PositionComponent, DoorComponent>();
-                    pos.Pos = Vec2(x, y);
+                    pos.Pos = Vec2(x * 64, y * 64);
                     door.Direction = Vec2Int(0, y == 0 ? -1 : 1);
                 } else if (x == 0 || y == 0 || x == MAP_WIDTH - 1 || y == MAP_HEIGHT - 1) {
                     texturePath = "textures/wall.png";
@@ -205,7 +207,7 @@ void update() {
                     continue;
 
                 auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-                pos.Pos = Vec2(x, y);
+                pos.Pos = Vec2(x * 64, y * 64);
                 sprite.Texture = texture;
                 order.Order = sortOrder;
             }
@@ -213,18 +215,19 @@ void update() {
 
         {
             auto [playerEntity, pos, sprite, order, tag] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag>();
-            pos.Pos = Vec2(mapLoad.PlayerPos);
+            pos.Pos = Vec2(mapLoad.PlayerPos) * 64;
             sprite.Texture = loadTexture("textures/player.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 10;
         }
 
         {
-            auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-            pos.Pos = Vec2(3, 6);
+            auto [ent, pos, sprite, order, shooter] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, FlowerShooter>();
+            pos.Pos = Vec2(3 * 64, 6 * 64);
             sprite.Texture = loadTexture("textures/flowerShooter.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 5;
+            shooter.TimeToShoot = FlowerShooter::TIME_TO_SHOOT;
         }
     });
 
@@ -236,4 +239,26 @@ void update() {
     });
 }
 }
+
+namespace flowerShooterSystem {
+void update(float dTime) {
+    ECS::reg().view<const PositionComponent, FlowerShooter>().each([dTime](const PositionComponent& flowerPos, FlowerShooter& shooter) {
+        shooter.TimeToShoot -= dTime;
+        if (shooter.TimeToShoot <= 0) {
+            shooter.TimeToShoot = FlowerShooter::TIME_TO_SHOOT;
+            
+            auto [ent, pos, sprite, order, anim] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, PositionAnim>();
+            pos.Pos = flowerPos.Pos + FlowerShooter::SHOT_START_POS;
+            sprite.Texture = loadTexture("textures/flowerProjectile.png");
+            SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
+            order.Order = 6;
+            anim.CurrentTime = 0;
+            anim.Time = 5;
+            anim.Start = pos.Pos;
+            anim.End = pos.Pos + Vec2(TILE_SIZE * 10, 0);
+        }
+    });
 }
+} // namespace flowerShooterSystem
+
+} // namespace eg

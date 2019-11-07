@@ -68,4 +68,12 @@ struct PositionAnim {
     float CurrentTime;
 };
 
+//-----------------------------------------------------------------------------
+struct FlowerShooter {
+    static constexpr float TIME_TO_SHOOT{ 1.0f };
+    static constexpr Vec2 SHOT_START_POS{ 30.0f, 26.0f };
+    //Vec2 Direction;
+    float TimeToShoot;
+};
+
 }
