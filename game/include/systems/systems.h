@@ -118,9 +118,10 @@ void update() {
         newPos.y += 1;
 
     if (!isWallAt(*map, newPos) && isInBounds(newPos)) {
-        auto playerAnimW = ECS::reg().view<Player_tag, PositionAnim>();
+        auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
+
         // Player does not have animation now
-        if (newPos != intPos && playerAnimW.empty()) {
+        if (newPos != intPos && !playerAnim) {
             ECS::reg().assign<PositionAnim>(*pw.begin(), pos.Pos, Vec2(newPos.x * TILE_SIZE, newPos.y * TILE_SIZE), 1.0f, 0.0f);
         }
     }
