@@ -8,9 +8,9 @@
 namespace eg {
 
 //-----------------------------------------------------------------------------
-bool isWallAt(const MapComponent& map, Vec2Int pos) {
+bool isWallAt(const MapComponent& map, Vec2 pos) {
     for (int i = 0; i < map.Walls.size(); ++i) {
-        if (map.Walls[i] == pos) {
+        if (Vec2(map.Walls[i]) == pos / TILE_SIZE) {
             return true;
         }
     }
@@ -19,8 +19,8 @@ bool isWallAt(const MapComponent& map, Vec2Int pos) {
 }
 
 //-----------------------------------------------------------------------------
-bool isInBounds(Vec2Int pos) {
-    return pos.x >= 0 && pos.y >= 0 && pos.x < MAP_WIDTH && pos.y < MAP_HEIGHT;
+bool isInBounds(Vec2 pos) {
+    return pos.x >= 0 && pos.y >= 0 && pos.x < MAP_WIDTH * TILE_SIZE && pos.y < MAP_HEIGHT * TILE_SIZE;
 }
 
 namespace inputSystem {
@@ -44,8 +44,7 @@ void update() {
     auto& pos = pw.get<PositionComponent>(*pw.begin());
     const auto map = ECS::reg().raw<MapComponent>();
 
-    const Vec2Int intPos(pos.Pos.x / 64, pos.Pos.y / 64);
-    Vec2Int posDiff(0, 0);
+    Vec2 posDiff(0, 0);
     if (keyboard->ADown)
         posDiff.x -= 1;
     else if (keyboard->DDown)
@@ -54,27 +53,25 @@ void update() {
         posDiff.y -= 1;
     else if (keyboard->SDown)
         posDiff.y += 1;
+    
+    *keyboard = {};
 
-    const Vec2Int newPos(intPos + posDiff);
-    if (!isWallAt(*map, newPos) && isInBounds(newPos)) {
+    if (posDiff != Vec2::ZERO()) {
         auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
-
-        // Player does not have animation now
-        if (newPos != intPos) {
-            const Vec2 newPosFlt(newPos * TILE_SIZE);
-            if (!playerAnim) {
-                ECS::reg().assign<PositionAnim>(*pw.begin(), pos.Pos, newPosFlt, PLAYER_ANIM_TIME, 0.0f);
-            } else {
-                const Vec2 reversePos(playerAnim->End + Vec2(posDiff * TILE_SIZE));
-                if (playerAnim->Start == reversePos) {
-                    // Canceling animation and moving back
-                    ECS::reg().replace<PositionAnim>(*pw.begin(), playerAnim->End, playerAnim->Start, PLAYER_ANIM_TIME, 1.0f - playerAnim->CurrentTime);
-                }
+        if (!playerAnim) {
+            const Vec2 newPos(pos.Pos + posDiff * TILE_SIZE);
+            if (!isWallAt(*map, newPos) && isInBounds(newPos)) {
+                // Player does not move now
+                ECS::reg().assign<PositionAnim>(*pw.begin(), pos.Pos, newPos, PLAYER_ANIM_TIME, 0.0f);
+            }
+        } else {
+            const Vec2 currentDir = (playerAnim->End - playerAnim->Start) / TILE_SIZE;
+            if (posDiff == -currentDir) {
+                // Canceling animation and moving back
+                ECS::reg().replace<PositionAnim>(*pw.begin(), playerAnim->End, playerAnim->Start, PLAYER_ANIM_TIME, PLAYER_ANIM_TIME - playerAnim->CurrentTime);
             }
         }
     }
-
-    *keyboard = {};
 }
 
 } // namespace inputSystem

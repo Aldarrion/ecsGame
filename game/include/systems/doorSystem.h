@@ -14,7 +14,7 @@ void update() {
     auto view = ECS::reg().view<DoorComponent, PositionComponent>();
 
     // If player collides with a door create an entity with a MapLoadComponent with correct info
-    view.each([playerPos = pos.Pos](const auto& door, const auto& doorPos) {
+    view.each([playerPos = pos.Pos](const DoorComponent& door, const PositionComponent& doorPos) {
         if (playerPos == doorPos.Pos) {
             const auto& currentMap = ECS::reg().get<MapComponent>(*ECS::reg().view<MapComponent>().begin());
             auto [ent, mapInfo] = ECS::reg().create<MapLoadInfo>();

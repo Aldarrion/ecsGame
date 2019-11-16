@@ -83,7 +83,7 @@ public:
         return Vec2(x + rhs.x, y + rhs.y);
     }
 
-    Vec2 operator-() {
+    Vec2 operator-() const {
         return Vec2(-x, -y);
     }
 
@@ -91,8 +91,18 @@ public:
         return operator+=(-rhs);
     }
 
-    Vec2 operator-(Vec2 rhs) {
+    Vec2 operator-(Vec2 rhs) const {
         return Vec2(x - rhs.x, y - rhs.y);
+    }
+
+    Vec2& operator/=(float f) {
+        x /= f;
+        y /= f;
+        return *this;
+    }
+
+    Vec2 operator/(float f) const {
+        return Vec2(x / f, y / f);
     }
 };
 
