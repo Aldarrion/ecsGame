@@ -9,13 +9,20 @@ set(SDL_LIB_DIR "" CACHE PATH "Location of the SDL libraries")
 
 include_directories(${SDL_INCLUDE_DIR} ${SDL_IMAGE_INCLUDE_DIR})
 
-include_directories("entt/src/")
-include_directories("game/include")
-
 file(GLOB_RECURSE GameSrc "game/src/*.cpp")
 file(GLOB_RECURSE GameHeaders "game/include/*.h")
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/game/include" PREFIX "game" FILES ${GameHeaders})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/game/src" PREFIX "game" FILES ${GameSrc})
 
-add_executable(ecsGame ${GameSrc} ${GameHeaders})
+file(GLOB_RECURSE EnttSrc "entt/src/*.cpp")
+file(GLOB_RECURSE EnttHeaders "entt/src/*.hpp")
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/entt/src" FILES ${EnttHeaders})
+
+include_directories("entt/src")
+include_directories("game/include")
+
+add_executable(ecsGame ${GameSrc} ${GameHeaders} ${EnttHeaders})
+
 
 if (WIN32)
     target_link_libraries(ecsGame "${SDL_LIB_DIR}/SDL2.lib" "${SDL_LIB_DIR}/SDL2_image.lib" "${SDL_LIB_DIR}/SDL2main.lib")
@@ -42,6 +49,7 @@ endif(WIN32)
 if (UNIX)
     target_link_libraries(ecsGame "/usr/lib/x86_64-linux-gnu/libSDL2.so" "/usr/lib/x86_64-linux-gnu/libSDL2_image.so")
 endif(UNIX)
+
 
 set_property(TARGET ecsGame PROPERTY CXX_STANDARD 17)
 set_property(TARGET ecsGame PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/assets")
