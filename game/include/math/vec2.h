@@ -1,5 +1,8 @@
 #pragma once
 
+// TODO(smejkalapav): Move to_string to logging and remove the include
+#include <string>
+
 namespace eg {
 
 //-----------------------------------------------------------------------------
@@ -79,6 +82,18 @@ public:
     Vec2 operator+(Vec2 rhs) const {
         return Vec2(x + rhs.x, y + rhs.y);
     }
+
+    Vec2 operator-() {
+        return Vec2(-x, -y);
+    }
+
+    Vec2& operator-=(Vec2 rhs) {
+        return operator+=(-rhs);
+    }
+
+    Vec2 operator-(Vec2 rhs) {
+        return Vec2(x - rhs.x, y - rhs.y);
+    }
 };
 
 Vec2 operator*(Vec2 v, float f) {
@@ -87,6 +102,10 @@ Vec2 operator*(Vec2 v, float f) {
 
 Vec2 operator*(float f, Vec2 v) {
     return v * f;
+}
+
+std::string to_string(Vec2 vec) {
+    return std::string("[" + std::to_string(vec.x) + ";" + std::to_string(vec.x) + "]");
 }
 
 }

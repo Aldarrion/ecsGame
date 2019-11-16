@@ -8,7 +8,7 @@ namespace positionAnimationSystem {
 
 //-----------------------------------------------------------------------------
 void update(float dTime) {
-    ECS::reg().view<PositionComponent, PositionAnim>().each([dTime](auto ent, auto& pos, auto& anim) {
+    ECS::reg().view<PositionComponent, PositionAnim>().each([dTime](auto ent, PositionComponent& pos, PositionAnim& anim) {
         anim.CurrentTime += dTime;
  
         if (anim.CurrentTime >= anim.Time) {

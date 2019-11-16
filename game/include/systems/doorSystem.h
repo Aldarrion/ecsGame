@@ -20,8 +20,8 @@ void update() {
             auto [ent, mapInfo] = ECS::reg().create<MapLoadInfo>();
             mapInfo.MapCoords = currentMap.MapCoords + door.Direction;
             mapInfo.PlayerPos = Vec2Int(
-                door.Direction.x == 0 ? doorPos.Pos.x : doorPos.Pos.x == 0 ? MAP_WIDTH - 2 : 1,
-                door.Direction.y == 0 ? doorPos.Pos.y : doorPos.Pos.y == 0 ? MAP_HEIGHT - 2 : 1
+                door.Direction.x == 0 ? doorPos.Pos.x / TILE_SIZE : doorPos.Pos.x / TILE_SIZE == 0 ? MAP_WIDTH - 2 : 1,
+                door.Direction.y == 0 ? doorPos.Pos.y / TILE_SIZE : doorPos.Pos.y / TILE_SIZE == 0 ? MAP_HEIGHT - 2 : 1
             );
         }
     });

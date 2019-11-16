@@ -52,7 +52,7 @@ void update() {
 
         {
             auto [playerEntity, pos, sprite, order, tag] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag>();
-            pos.Pos = Vec2(mapLoad.PlayerPos) * 64;
+            pos.Pos = Vec2(mapLoad.PlayerPos * TILE_SIZE);
             sprite.Texture = loadTexture("textures/player.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 10;

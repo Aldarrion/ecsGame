@@ -24,7 +24,6 @@ bool isInBounds(Vec2Int pos) {
 }
 
 namespace inputSystem {
-
 //-----------------------------------------------------------------------------
 void keyDown(const SDL_KeyboardEvent& event) {
     auto k = ECS::reg().raw<KeyboardStateComponent>();
@@ -36,6 +35,8 @@ void keyDown(const SDL_KeyboardEvent& event) {
     }
 }
 
+constexpr float PLAYER_ANIM_TIME = 0.2f;
+
 //-----------------------------------------------------------------------------
 void update() {
     auto keyboard = ECS::reg().raw<KeyboardStateComponent>();
@@ -43,23 +44,33 @@ void update() {
     auto& pos = pw.get<PositionComponent>(*pw.begin());
     const auto map = ECS::reg().raw<MapComponent>();
 
-    const Vec2Int intPos = Vec2Int(pos.Pos.x / 64, pos.Pos.y / 64);
-    Vec2Int newPos = intPos;
+    const Vec2Int intPos(pos.Pos.x / 64, pos.Pos.y / 64);
+    Vec2Int posDiff(0, 0);
     if (keyboard->ADown)
-        newPos.x -= 1;
+        posDiff.x -= 1;
     else if (keyboard->DDown)
-        newPos.x += 1;
+        posDiff.x += 1;
     else if (keyboard->WDown)
-        newPos.y -= 1;
+        posDiff.y -= 1;
     else if (keyboard->SDown)
-        newPos.y += 1;
+        posDiff.y += 1;
 
+    const Vec2Int newPos(intPos + posDiff);
     if (!isWallAt(*map, newPos) && isInBounds(newPos)) {
         auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
 
         // Player does not have animation now
-        if (newPos != intPos && !playerAnim) {
-            ECS::reg().assign<PositionAnim>(*pw.begin(), pos.Pos, Vec2(newPos * TILE_SIZE), 1.0f, 0.0f);
+        if (newPos != intPos) {
+            const Vec2 newPosFlt(newPos * TILE_SIZE);
+            if (!playerAnim) {
+                ECS::reg().assign<PositionAnim>(*pw.begin(), pos.Pos, newPosFlt, PLAYER_ANIM_TIME, 0.0f);
+            } else {
+                const Vec2 reversePos(playerAnim->End + Vec2(posDiff * TILE_SIZE));
+                if (playerAnim->Start == reversePos) {
+                    // Canceling animation and moving back
+                    ECS::reg().replace<PositionAnim>(*pw.begin(), playerAnim->End, playerAnim->Start, PLAYER_ANIM_TIME, 1.0f - playerAnim->CurrentTime);
+                }
+            }
         }
     }
 
