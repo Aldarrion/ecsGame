@@ -54,3 +54,7 @@ endif(UNIX)
 set_property(TARGET ecsGame PROPERTY CXX_STANDARD 17)
 set_property(TARGET ecsGame PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/assets")
 
+# Disable undesired warnings
+if (MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244") # 'conversion' conversion from 'type1' to 'type2', possible loss of data
+endif(MSVC)

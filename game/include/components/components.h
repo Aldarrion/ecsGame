@@ -10,6 +10,10 @@ struct SDL_Renderer;
 
 namespace eg {
 
+static constexpr int MAP_WIDTH = 12;
+static constexpr int MAP_HEIGHT = 9;
+static constexpr int TILE_SIZE = 64;
+
 //-----------------------------------------------------------------------------
 struct TextureRegistry {
     std::unordered_map<std::string, SDL_Texture*> Registry;

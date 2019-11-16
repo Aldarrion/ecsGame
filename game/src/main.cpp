@@ -1,5 +1,11 @@
 
 #include "components/components.h"
+#include "systems/doorSystem.h"
+#include "systems/flowerShooterSystem.h"
+#include "systems/inputSystem.h"
+#include "systems/mapSystem.h"
+#include "systems/positionAnimationSystem.h"
+#include "systems/spriteRenderSystem.h"
 #include "systems/systems.h"
 
 #include "ecs.h"

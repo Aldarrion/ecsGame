@@ -37,6 +37,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+Vec2Int operator*(Vec2Int v, int i) {
+    return Vec2Int(v.x * i, v.y * i);
+}
+//-----------------------------------------------------------------------------
+Vec2Int operator*(int i, Vec2Int v) {
+    return v * i;
+}
+
+
+//-----------------------------------------------------------------------------
 class Vec2 {
 public:
     union {
@@ -50,7 +60,7 @@ public:
 
     Vec2() = default;
     constexpr Vec2(float x, float y) : x(x), y(y) {}
-    constexpr explicit Vec2(Vec2Int other) : x(other.x), y(other.y) {}
+    constexpr explicit Vec2(Vec2Int other) : x(static_cast<float>(other.x)), y(static_cast<float>(other.y)) {}
 
     bool operator==(Vec2 rhs) const {
         return x == rhs.x && y == rhs.y;
