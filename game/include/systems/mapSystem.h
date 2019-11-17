@@ -8,6 +8,16 @@ namespace eg {
 namespace mapSystem {
 
 //-----------------------------------------------------------------------------
+Vec2 coordsToPos(int x, int y) {
+    return Vec2(x * TILE_SIZE + TILE_HALF_SIZE, y * TILE_SIZE + TILE_HALF_SIZE);
+}
+
+//-----------------------------------------------------------------------------
+Vec2 coordsToPos(Vec2Int vec) {
+    return coordsToPos(vec.x, vec.y);
+}
+
+//-----------------------------------------------------------------------------
 void update() {
     // Process all MapLoadComponents and load specified map based on the data present
     ECS::reg().view<MapLoadInfo>().each([](const auto& mapLoad){
@@ -32,7 +42,7 @@ void update() {
                 if (x == 5 && (y == 0 || y == MAP_HEIGHT - 1)) {
                     texturePath = "textures/door.png";
                     auto [ent, pos, door] = ECS::reg().create<PositionComponent, DoorComponent>();
-                    pos.Pos = Vec2(x * 64, y * 64);
+                    pos.Pos = coordsToPos(x, y);
                     door.Direction = Vec2Int(0, y == 0 ? -1 : 1);
                 } else if (x == 0 || y == 0 || x == MAP_WIDTH - 1 || y == MAP_HEIGHT - 1) {
                     texturePath = "textures/wall.png";
@@ -44,7 +54,7 @@ void update() {
                     continue;
 
                 auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-                pos.Pos = Vec2(x * 64, y * 64);
+                pos.Pos = coordsToPos(x, y);
                 sprite.Texture = texture;
                 order.Order = sortOrder;
             }
@@ -52,7 +62,7 @@ void update() {
 
         {
             auto [playerEntity, pos, sprite, order, tag] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag>();
-            pos.Pos = Vec2(mapLoad.PlayerPos * TILE_SIZE);
+            pos.Pos = coordsToPos(mapLoad.PlayerPos);
             sprite.Texture = loadTexture("textures/player.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 10;
@@ -60,7 +70,7 @@ void update() {
 
         {
             auto [ent, pos, sprite, order, shooter] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, FlowerShooter>();
-            pos.Pos = Vec2(3 * 64, 6 * 64);
+            pos.Pos = coordsToPos(3, 6);
             sprite.Texture = loadTexture("textures/flowerShooter.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 5;

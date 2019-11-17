@@ -9,8 +9,9 @@ namespace eg {
 
 //-----------------------------------------------------------------------------
 bool isWallAt(const MapComponent& map, Vec2 pos) {
+    Vec2Int coords(pos / TILE_SIZE);
     for (int i = 0; i < map.Walls.size(); ++i) {
-        if (Vec2(map.Walls[i]) == pos / TILE_SIZE) {
+        if (map.Walls[i] == coords) {
             return true;
         }
     }
@@ -35,11 +36,23 @@ void keyDown(const SDL_KeyboardEvent& event) {
     }
 }
 
+//-----------------------------------------------------------------------------
+void keyUp(const SDL_KeyboardEvent& event) {
+    auto k = ECS::reg().raw<KeyboardStateComponent>();
+    switch (event.keysym.sym) {
+        case SDLK_a: k->ADown = false; break;
+        case SDLK_s: k->SDown = false; break;
+        case SDLK_d: k->DDown = false; break;
+        case SDLK_w: k->WDown = false; break;
+    }
+}
+
+//-----------------------------------------------------------------------------
 constexpr float PLAYER_ANIM_TIME = 0.2f;
 
 //-----------------------------------------------------------------------------
-void update() {
-    auto keyboard = ECS::reg().raw<KeyboardStateComponent>();
+void update(float dTime) {
+    auto keyboard = ECS::reg().raw<const KeyboardStateComponent>();
     auto pw = ECS::reg().view<Player_tag, PositionComponent>();
     auto& pos = pw.get<PositionComponent>(*pw.begin());
     const auto map = ECS::reg().raw<MapComponent>();
@@ -54,8 +67,6 @@ void update() {
     else if (keyboard->SDown)
         posDiff.y += 1;
     
-    *keyboard = {};
-
     if (posDiff != Vec2::ZERO()) {
         auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
         if (!playerAnim) {
@@ -69,6 +80,10 @@ void update() {
             if (posDiff == -currentDir) {
                 // Canceling animation and moving back
                 ECS::reg().replace<PositionAnim>(*pw.begin(), playerAnim->End, playerAnim->Start, PLAYER_ANIM_TIME, PLAYER_ANIM_TIME - playerAnim->CurrentTime);
+            } else if (playerAnim->CurrentTime + dTime > playerAnim->Time) {
+                // Anim will end this frame, schedule a new one instead
+                const Vec2 newPos(playerAnim->End + posDiff * TILE_SIZE);
+                ECS::reg().replace<PositionAnim>(*pw.begin(), playerAnim->End, newPos, PLAYER_ANIM_TIME, -(playerAnim->CurrentTime + dTime - PLAYER_ANIM_TIME));
             }
         }
     }

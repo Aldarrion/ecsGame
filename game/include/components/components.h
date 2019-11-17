@@ -13,6 +13,7 @@ namespace eg {
 static constexpr int MAP_WIDTH = 12;
 static constexpr int MAP_HEIGHT = 9;
 static constexpr int TILE_SIZE = 64;
+static constexpr int TILE_HALF_SIZE = TILE_SIZE / 2;
 
 //-----------------------------------------------------------------------------
 struct TextureRegistry {
@@ -75,9 +76,14 @@ struct PositionAnim {
 //-----------------------------------------------------------------------------
 struct FlowerShooter {
     static constexpr float TIME_TO_SHOOT{ 1.0f };
-    static constexpr Vec2 SHOT_START_POS{ 30.0f, 26.0f };
+    static constexpr Vec2 SHOT_START_POS{ -2.0f, -6.0f };
     //Vec2 Direction;
     float TimeToShoot;
+};
+
+//-----------------------------------------------------------------------------
+struct SphereColliderComponent {
+    float Radius;
 };
 
 }

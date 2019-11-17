@@ -13,15 +13,20 @@ void update(float dTime) {
         if (shooter.TimeToShoot <= 0) {
             shooter.TimeToShoot = FlowerShooter::TIME_TO_SHOOT;
             
-            auto [ent, pos, sprite, order, anim] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, PositionAnim>();
-            pos.Pos = flowerPos.Pos + FlowerShooter::SHOT_START_POS;
+            auto [ent, pos, sprite, order, anim, sphere] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, PositionAnim, SphereColliderComponent>();
             sprite.Texture = loadTexture("textures/flowerProjectile.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
+            int w, h;
+            SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &w, &h);
+
+            pos.Pos = flowerPos.Pos + FlowerShooter::SHOT_START_POS;
             order.Order = 6;
             anim.CurrentTime = 0;
             anim.Time = 5;
             anim.Start = pos.Pos;
             anim.End = pos.Pos + Vec2(TILE_SIZE * 10, 0);
+
+            sphere.Radius = w / 2.0f;
         }
     });
 }

@@ -19,7 +19,7 @@ void update() {
     ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, const SpriteComponent& sprite, const PositionComponent& pos) {
         int w, h;
         SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &w, &h);
-        SDL_Rect dst{ int(pos.Pos.x), int(pos.Pos.y), w, h };
+        SDL_Rect dst{ int(pos.Pos.x - w / 2.0f), int(pos.Pos.y - h / 2.0f), w, h };
         if (SDL_RenderCopy(render, sprite.Texture, nullptr, &dst) != 0) {
             std::cerr << SDL_GetError() << std::endl;
         }

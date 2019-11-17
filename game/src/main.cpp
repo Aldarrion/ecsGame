@@ -57,7 +57,7 @@ int runGame() {
 
     auto rendererEntity = eg::ECS::reg().create();
     ECS::reg().get_or_assign<eg::RendererComponent>(rendererEntity).Renderer = renderer;
-    
+
     eg::ECS::reg().create<eg::TextureRegistry>();
 
     initGame();
@@ -69,31 +69,35 @@ int runGame() {
 
     auto start = std::chrono::high_resolution_clock::now();
     auto end = std::chrono::high_resolution_clock::now();
-    while (!quit) {
+    while (true) {
         auto dTime = std::chrono::duration<float>(end - start).count();
-        
-        while(SDL_PollEvent(&event)) {
+
+        while (SDL_PollEvent(&event)) {
             switch (event.type) {
-                case SDL_QUIT:
-                    quit = true;
-                    break;
-                case SDL_KEYDOWN:
-                    inputSystem::keyDown(event.key);
-                    break;
-                case SDL_KEYUP:
-                    break;
+            case SDL_QUIT:
+                quit = true;
+                break;
+            case SDL_KEYDOWN:
+                inputSystem::keyDown(event.key);
+                break;
+            case SDL_KEYUP:
+                inputSystem::keyUp(event.key);
+                break;
             }
         }
 
+        if (quit)
+            break;
+
         mapSystem::update();
-        inputSystem::update();
-        
+        inputSystem::update(dTime);
+
         flowerShooterSystem::update(dTime);
         positionAnimationSystem::update(dTime);
 
         spriteRenderSystem::update();
         doorSystem::update();
-        
+
         start = end;
         end = std::chrono::high_resolution_clock::now();
     }
