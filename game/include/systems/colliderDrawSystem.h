@@ -53,6 +53,11 @@ constexpr uint8_t getCol(uint32_t color) {
 }
 //-----------------------------------------------------------------------------
 void update() {
+    auto config = ECS::reg().raw<ConfigComponent>();
+    if (!config || !config->DrawDebugColliders) {
+        return;
+    }
+
     RendererComponent* render = ECS::reg().raw<RendererComponent>();
     uint8_t a = getCol<Channel::ALPHA>(COLLIDER_COLOR);
     SDL_SetRenderDrawColor(render->Renderer, getCol<Channel::RED>(COLLIDER_COLOR), getCol<Channel::GREEN>(COLLIDER_COLOR), getCol<Channel::BLUE>(COLLIDER_COLOR), getCol<Channel::ALPHA>(COLLIDER_COLOR));

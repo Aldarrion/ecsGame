@@ -63,7 +63,10 @@ int runGame() {
 
     initGame();
 
-    ECS::reg().create<KeyboardStateComponent>();
+    ECS::reg().create<KeyboardStateComponent, Current_tag>();
+    ECS::reg().create<KeyboardStateComponent, Previous_tag>();
+    
+    ECS::reg().create<ConfigComponent>();
 
     SDL_Event event;
     bool quit = false;
@@ -103,6 +106,10 @@ int runGame() {
         SDL_RenderPresent(renderer);
 
         doorSystem::update();
+
+        auto& prev = ECS::getSingleton<KeyboardStateComponent, Previous_tag>();
+        auto& curr = ECS::getSingleton<KeyboardStateComponent, Current_tag>();
+        prev = curr;
 
         start = end;
         end = std::chrono::high_resolution_clock::now();

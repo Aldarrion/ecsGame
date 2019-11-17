@@ -42,6 +42,7 @@ struct SpriteComponent {
 
 //-----------------------------------------------------------------------------
 struct KeyboardStateComponent {
+    bool F2Down{ false };
     bool ADown{ false };
     bool SDown{ false };
     bool DDown{ false };
@@ -84,6 +85,11 @@ struct FlowerShooter {
 //-----------------------------------------------------------------------------
 struct CircleColliderComponent {
     float Radius;
+};
+
+//-----------------------------------------------------------------------------
+struct ConfigComponent {
+    bool DrawDebugColliders{ false };
 };
 
 }
