@@ -57,4 +57,5 @@ set_property(TARGET ecsGame PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOUR
 # Disable undesired warnings
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244") # 'conversion' conversion from 'type1' to 'type2', possible loss of data
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # 'var' : conversion from 'size_t' to 'type', possible loss of data
 endif(MSVC)

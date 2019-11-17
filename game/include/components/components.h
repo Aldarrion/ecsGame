@@ -82,7 +82,7 @@ struct FlowerShooter {
 };
 
 //-----------------------------------------------------------------------------
-struct SphereColliderComponent {
+struct CircleColliderComponent {
     float Radius;
 };
 

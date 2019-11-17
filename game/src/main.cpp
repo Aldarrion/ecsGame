@@ -6,6 +6,7 @@
 #include "systems/mapSystem.h"
 #include "systems/positionAnimationSystem.h"
 #include "systems/spriteRenderSystem.h"
+#include "systems/colliderDrawSystem.h"
 #include "systems/systems.h"
 
 #include "ecs.h"
@@ -95,7 +96,12 @@ int runGame() {
         flowerShooterSystem::update(dTime);
         positionAnimationSystem::update(dTime);
 
-        spriteRenderSystem::update();
+        SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+        SDL_RenderClear(renderer);
+            spriteRenderSystem::update();
+            colliderDrawSystem::update();
+        SDL_RenderPresent(renderer);
+
         doorSystem::update();
 
         start = end;

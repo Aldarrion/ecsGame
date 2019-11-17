@@ -13,7 +13,7 @@ void update(float dTime) {
         if (shooter.TimeToShoot <= 0) {
             shooter.TimeToShoot = FlowerShooter::TIME_TO_SHOOT;
             
-            auto [ent, pos, sprite, order, anim, sphere] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, PositionAnim, SphereColliderComponent>();
+            auto [ent, pos, sprite, order, anim, sphere] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, PositionAnim, CircleColliderComponent>();
             sprite.Texture = loadTexture("textures/flowerProjectile.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             int w, h;

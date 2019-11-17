@@ -14,8 +14,7 @@ void update() {
     auto rc = ECS::reg().raw<RendererComponent>();
 
     SDL_SetRenderDrawColor(rc->Renderer, 128, 128, 128, 255);
-    SDL_RenderClear(rc->Renderer);
-
+    
     ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, const SpriteComponent& sprite, const PositionComponent& pos) {
         int w, h;
         SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &w, &h);
@@ -24,8 +23,6 @@ void update() {
             std::cerr << SDL_GetError() << std::endl;
         }
     });
-
-    SDL_RenderPresent(rc->Renderer);
 }
 
 //-----------------------------------------------------------------------------
