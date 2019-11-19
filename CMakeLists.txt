@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.14)
 
 project(ecsGame)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
 set(SDL_INCLUDE_DIR "" CACHE PATH "Location of the SDL include directory")
 set(SDL_LIB_DIR "" CACHE PATH "Location of the SDL libraries")
 

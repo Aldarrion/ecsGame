@@ -2,6 +2,7 @@
 
 // TODO(smejkalapav): Move to_string to logging and remove the include
 #include <string>
+#include <cmath>
 
 namespace eg {
 
@@ -70,43 +71,57 @@ public:
     constexpr explicit Vec2(float xy) : x(xy), y(xy) {}
     constexpr explicit Vec2(Vec2Int other) : x(static_cast<float>(other.x)), y(static_cast<float>(other.y)) {}
 
-    bool operator==(Vec2 rhs) const {
+    constexpr float dot(Vec2 other) const {
+        return x * other.x + y * other.y;
+    }
+    
+    float length() const {
+        return std::sqrt(dot(*this));
+    }
+
+    void normalize() {
+        const float len = length();
+        x /= len;
+        y /= len;
+    }
+
+    constexpr bool operator==(Vec2 rhs) const {
         return x == rhs.x && y == rhs.y;
     }
 
-    bool operator!=(Vec2 rhs) const {
+    constexpr bool operator!=(Vec2 rhs) const {
         return !(*this == rhs);
     }
 
-    Vec2& operator+=(Vec2 rhs) {
+    constexpr Vec2& operator+=(Vec2 rhs) {
         x += rhs.x;
         y += rhs.y;
         return *this;
     }
 
-    Vec2 operator+(Vec2 rhs) const {
+    constexpr Vec2 operator+(Vec2 rhs) const {
         return Vec2(x + rhs.x, y + rhs.y);
     }
 
-    Vec2 operator-() const {
+    constexpr Vec2 operator-() const {
         return Vec2(-x, -y);
     }
 
-    Vec2& operator-=(Vec2 rhs) {
+    constexpr Vec2& operator-=(Vec2 rhs) {
         return operator+=(-rhs);
     }
 
-    Vec2 operator-(Vec2 rhs) const {
+    constexpr Vec2 operator-(Vec2 rhs) const {
         return Vec2(x - rhs.x, y - rhs.y);
     }
 
-    Vec2& operator/=(float f) {
+    constexpr Vec2& operator/=(float f) {
         x /= f;
         y /= f;
         return *this;
     }
 
-    Vec2 operator/(float f) const {
+    constexpr Vec2 operator/(float f) const {
         return Vec2(x / f, y / f);
     }
 };

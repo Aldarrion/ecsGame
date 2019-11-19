@@ -61,11 +61,14 @@ void update() {
         }
 
         {
-            auto [playerEntity, pos, sprite, order, tag] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag>();
+            auto [playerEntity, pos, sprite, order, tag, capsule] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag, CapsuleColliderComponent>();
             pos.Pos = coordsToPos(mapLoad.PlayerPos);
             sprite.Texture = loadTexture("textures/player.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 10;
+            capsule.Start = Vec2(0, -32);
+            capsule.End = Vec2(0, 32);
+            capsule.Radius = 16;
         }
 
         {

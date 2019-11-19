@@ -88,6 +88,13 @@ struct CircleColliderComponent {
 };
 
 //-----------------------------------------------------------------------------
+struct CapsuleColliderComponent {
+    Vec2 Start;
+    Vec2 End;
+    float Radius;
+};
+
+//-----------------------------------------------------------------------------
 struct ConfigComponent {
     bool DrawDebugColliders{ false };
 };
