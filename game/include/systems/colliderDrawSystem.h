@@ -92,9 +92,8 @@ void update() {
     }
 
     RendererComponent* render = ECS::reg().raw<RendererComponent>();
-    uint8_t a = getCol<Channel::ALPHA>(COLLIDER_COLOR);
     SDL_SetRenderDrawColor(render->Renderer, getCol<Channel::RED>(COLLIDER_COLOR), getCol<Channel::GREEN>(COLLIDER_COLOR), getCol<Channel::BLUE>(COLLIDER_COLOR), getCol<Channel::ALPHA>(COLLIDER_COLOR));
-    
+
     ECS::reg().view<const CircleColliderComponent, const PositionComponent>().each([renderer = render->Renderer](auto entity, const CircleColliderComponent& circle, const PositionComponent& pos) {
         drawCircle(renderer, pos.Pos, circle.Radius);
     });
@@ -102,6 +101,7 @@ void update() {
     ECS::reg().view<const CapsuleColliderComponent, const PositionComponent>().each([renderer = render->Renderer](auto entity, const CapsuleColliderComponent& capsule, const PositionComponent& pos) {
         drawCapsule(renderer, pos.Pos, capsule.Start, capsule.End, capsule.Radius);
     });
+}
 
 } // namespace colliderDrawSystem
 } // namespace eg
