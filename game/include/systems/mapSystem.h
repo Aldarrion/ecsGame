@@ -66,9 +66,9 @@ void update() {
             sprite.Texture = loadTexture("textures/player.png");
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 10;
-            capsule.Start = Vec2(0, -32);
-            capsule.End = Vec2(0, 32);
-            capsule.Radius = 16;
+            capsule.Start = Vec2(4, -8);
+            capsule.End = Vec2(4, 14);
+            capsule.Radius = 12;
         }
 
         {

@@ -21,7 +21,7 @@ void drawPartCircle(SDL_Renderer* render, Vec2 pos, float radius, float startAng
     for (int i = 0; i < points.size(); ++i) {
         const float angle = startAngle + anglePart * i;
         points[i].x = pos.x + std::cos(angle) * radius;
-        points[i].y = pos.y + std::sin(angle) * radius;
+        points[i].y = pos.y - std::sin(angle) * radius; // -sin because y is down
     }
 
     if (SDL_RenderDrawLines(render, points.data(), points.size())) {
