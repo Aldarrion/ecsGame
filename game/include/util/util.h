@@ -21,7 +21,7 @@ SDL_Texture* loadTexture(const std::string& path) {
     } else {
         SDL_Surface* loadingSurface = IMG_Load(path.c_str());
         if (!loadingSurface) {
-            std::cerr << "Failed loading texture " << path << ", error: " << IMG_GetError() << std::endl;
+            fprintf(stderr, "Failed loading texture %s, error: %s\n", path.c_str(), IMG_GetError());
             return nullptr;
         }
 

@@ -25,7 +25,7 @@ void drawPartCircle(SDL_Renderer* render, Vec2 pos, float radius, float startAng
     }
 
     if (SDL_RenderDrawLines(render, points.data(), points.size())) {
-        std::cerr << "SDL draw lines failed: " << SDL_GetError() << std::endl;
+        fprintf(stderr, "SDL draw lines failed: %s\n", SDL_GetError());
     }
 }
 //-----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ void drawCircle(SDL_Renderer* render, Vec2 pos, float radius) {
 //-----------------------------------------------------------------------------
 void drawLine(SDL_Renderer* render, Vec2 from, Vec2 to) {
     if (SDL_RenderDrawLine(render, from.x, from.y, to.x, to.y)) {
-        std::cerr << "SDL draw line failed: " << SDL_GetError() << std::endl;
+        fprintf(stderr, "SDL draw line failed: %s\n", SDL_GetError());
     }
 }
 //-----------------------------------------------------------------------------

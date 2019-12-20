@@ -15,7 +15,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 
-#include <iostream>
+#include <cstdio>
 #include <chrono>
 
 
@@ -28,16 +28,16 @@ void initGame() {
 }
 
 int runGame() {
-    std::cout << "Game started" << std::endl;
+    printf("Game started\n");
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "SDL init failded: " << SDL_GetError() << std::endl;
+        fprintf(stderr, "SDL init failded: %s\n", SDL_GetError());
         return 1;
     }
 
     SDL_Window* window = SDL_CreateWindow("Hello world", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
     if (!window) {
-        std::cerr << "SDL window creation failded: " << SDL_GetError() << std::endl;
+        fprintf(stderr, "SDL window creation failded: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
@@ -45,14 +45,14 @@ int runGame() {
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer) {
         SDL_DestroyWindow(window);
-        std::cerr << "SDL renderer creation failed: " << SDL_GetError() << std::endl;
+        fprintf(stderr, "SDL renderer creation failed: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
     int flags = IMG_INIT_PNG;
     if ((IMG_Init(flags) & flags) != flags) {
-        std::cerr << "SDL IMG init failed, " << IMG_GetError() << std::endl;
+        fprintf(stderr, "SDL IMG init failed, %s\n", IMG_GetError());
         return 1;
     }
 
@@ -117,7 +117,7 @@ int runGame() {
 
     spriteRenderSystem::cleanup();
 
-    std::cout << "Done" << std::endl;
+    printf("Done\n");
 
     return 0;
 }
