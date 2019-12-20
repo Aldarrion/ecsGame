@@ -69,17 +69,18 @@ int runGame() {
     ECS::reg().create<ConfigComponent>();
 
     SDL_Event event;
-    bool quit = false;
 
     auto start = std::chrono::high_resolution_clock::now();
     auto end = std::chrono::high_resolution_clock::now();
     while (true) {
         auto dTime = std::chrono::duration<float>(end - start).count();
 
+        auto& config = ECS::getSingleton<ConfigComponent>();
+
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
-                quit = true;
+                config.ShouldQuit = true;
                 break;
             case SDL_KEYDOWN:
                 inputSystem::keyDown(event.key);
@@ -90,14 +91,18 @@ int runGame() {
             }
         }
 
-        if (quit)
+        inputSystem::systemUpdate();
+
+        if (config.ShouldQuit)
             break;
 
-        mapSystem::update();
-        inputSystem::update(dTime);
+        if (!config.IsSimulationPaused) {
+            mapSystem::update();
+            inputSystem::update(dTime);
 
-        flowerShooterSystem::update(dTime);
-        positionAnimationSystem::update(dTime);
+            flowerShooterSystem::update(dTime);
+            positionAnimationSystem::update(dTime);
+        }
 
         SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
         SDL_RenderClear(renderer);
@@ -105,7 +110,9 @@ int runGame() {
             colliderDrawSystem::update();
         SDL_RenderPresent(renderer);
 
-        doorSystem::update();
+        if (!config.IsSimulationPaused) {
+            doorSystem::update();
+        }
 
         auto& prev = ECS::getSingleton<KeyboardStateComponent, Previous_tag>();
         auto& curr = ECS::getSingleton<KeyboardStateComponent, Current_tag>();

@@ -42,7 +42,9 @@ struct SpriteComponent {
 
 //-----------------------------------------------------------------------------
 struct KeyboardStateComponent {
+    bool EscapeDown{ false };
     bool F2Down{ false };
+    bool F9Down{ false };
     bool ADown{ false };
     bool SDown{ false };
     bool DDown{ false };
@@ -96,6 +98,8 @@ struct CapsuleColliderComponent {
 
 //-----------------------------------------------------------------------------
 struct ConfigComponent {
+    bool ShouldQuit{ false };
+    bool IsSimulationPaused{ false };
     bool DrawDebugColliders{ false };
 };
 

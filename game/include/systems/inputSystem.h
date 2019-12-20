@@ -25,15 +25,24 @@ bool isInBounds(Vec2 pos) {
 }
 
 namespace inputSystem {
+
+#define HS_KEY_CASE(keyCode, var, value) case keyCode: var = value; break;
+#define HS_KEY_DOWN_CASE(keyCode, var) HS_KEY_CASE(keyCode, var,  true)
+#define HS_KEY_UP_CASE(keyCode, var) HS_KEY_CASE(keyCode, var, false)
+
+//#define HS_IS_KEY_DOWN(keyCode, varName) case keyCode:   return prev.F2Down == false && curr.F2Down == true;
+
 //-----------------------------------------------------------------------------
 void keyDown(const SDL_KeyboardEvent& event) {
     auto& k = ECS::getSingleton<KeyboardStateComponent, Current_tag>();
     switch (event.keysym.sym) {
-        case SDLK_F2:   k.F2Down = true; break;
-        case SDLK_a:    k.ADown = true; break;
-        case SDLK_s:    k.SDown = true; break;
-        case SDLK_d:    k.DDown = true; break;
-        case SDLK_w:    k.WDown = true; break;
+        HS_KEY_DOWN_CASE(SDLK_ESCAPE, k.EscapeDown);
+        HS_KEY_DOWN_CASE(SDLK_F2, k.F2Down);
+        HS_KEY_DOWN_CASE(SDLK_F9, k.F9Down);
+        HS_KEY_DOWN_CASE(SDLK_a, k.ADown);
+        HS_KEY_DOWN_CASE(SDLK_s, k.SDown);
+        HS_KEY_DOWN_CASE(SDLK_d, k.DDown);
+        HS_KEY_DOWN_CASE(SDLK_w, k.WDown);
     }
 }
 
@@ -41,11 +50,13 @@ void keyDown(const SDL_KeyboardEvent& event) {
 void keyUp(const SDL_KeyboardEvent& event) {
     auto& k = ECS::getSingleton<KeyboardStateComponent, Current_tag>();
     switch (event.keysym.sym) {
-        case SDLK_F2:   k.F2Down = false; break;
-        case SDLK_a:    k.ADown = false; break;
-        case SDLK_s:    k.SDown = false; break;
-        case SDLK_d:    k.DDown = false; break;
-        case SDLK_w:    k.WDown = false; break;
+        HS_KEY_UP_CASE(SDLK_ESCAPE, k.EscapeDown);
+        HS_KEY_UP_CASE(SDLK_F2, k.F2Down);
+        HS_KEY_UP_CASE(SDLK_F9, k.F9Down);
+        HS_KEY_UP_CASE(SDLK_a, k.ADown);
+        HS_KEY_UP_CASE(SDLK_s, k.SDown);
+        HS_KEY_UP_CASE(SDLK_d, k.DDown);
+        HS_KEY_UP_CASE(SDLK_w, k.WDown);
     }
 }
 
@@ -55,11 +66,13 @@ constexpr float PLAYER_ANIM_TIME = 0.2f;
 //-----------------------------------------------------------------------------
 bool isKeyDown(SDL_Keycode key, const KeyboardStateComponent& prev, const KeyboardStateComponent& curr) {
     switch (key) {
-        case SDLK_F2:   return prev.F2Down == false && curr.F2Down == true;
-        case SDLK_a:    return prev.ADown == false && curr.ADown == true;
-        case SDLK_s:    return prev.SDown == false && curr.SDown == true;
-        case SDLK_d:    return prev.DDown == false && curr.DDown == true;
-        case SDLK_w:    return prev.WDown == false && curr.WDown == true;
+        case SDLK_ESCAPE:   return prev.EscapeDown == false && curr.EscapeDown== true;
+        case SDLK_F2:       return prev.F2Down == false && curr.F2Down == true;
+        case SDLK_F9:       return prev.F9Down == false && curr.F9Down == true;
+        case SDLK_a:        return prev.ADown == false && curr.ADown == true;
+        case SDLK_s:        return prev.SDown == false && curr.SDown == true;
+        case SDLK_d:        return prev.DDown == false && curr.DDown == true;
+        case SDLK_w:        return prev.WDown == false && curr.WDown == true;
     }
     return false;
 }
@@ -69,6 +82,22 @@ bool isKeyDown(SDL_Keycode key) {
     auto& prev = ECS::getSingleton<KeyboardStateComponent, Previous_tag>();
     auto& curr = ECS::getSingleton<KeyboardStateComponent, Current_tag>();
     return isKeyDown(key, prev, curr);
+}
+
+//-----------------------------------------------------------------------------
+void systemUpdate() {
+    auto& keyboard = ECS::getSingleton<KeyboardStateComponent, Current_tag>();
+    auto& prevKeyboard = ECS::getSingleton<KeyboardStateComponent, Previous_tag>();
+    auto& config = ECS::getSingleton<ConfigComponent>();
+
+    if (isKeyDown(SDLK_ESCAPE, prevKeyboard, keyboard)) {
+        config.ShouldQuit = true;
+        return;
+    }
+
+    if (isKeyDown(SDLK_F9, prevKeyboard, keyboard)) {
+        config.IsSimulationPaused = !config.IsSimulationPaused;
+    }
 }
 
 //-----------------------------------------------------------------------------
