@@ -95,7 +95,7 @@ void update() {
     SDL_SetRenderDrawColor(render->Renderer, getCol<Channel::RED>(COLLIDER_COLOR), getCol<Channel::GREEN>(COLLIDER_COLOR), getCol<Channel::BLUE>(COLLIDER_COLOR), getCol<Channel::ALPHA>(COLLIDER_COLOR));
 
     ECS::reg().view<const CircleColliderComponent, const PositionComponent>().each([renderer = render->Renderer](auto entity, const CircleColliderComponent& circle, const PositionComponent& pos) {
-        drawCircle(renderer, pos.Pos, circle.Radius);
+        drawCircle(renderer, pos.Pos + circle.Position, circle.Radius);
     });
 
     ECS::reg().view<const CapsuleColliderComponent, const PositionComponent>().each([renderer = render->Renderer](auto entity, const CapsuleColliderComponent& capsule, const PositionComponent& pos) {

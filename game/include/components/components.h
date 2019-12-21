@@ -86,6 +86,7 @@ struct FlowerShooter {
 
 //-----------------------------------------------------------------------------
 struct CircleColliderComponent {
+    Vec2 Position{ 0.0f };
     float Radius;
 };
 
