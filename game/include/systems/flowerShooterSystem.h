@@ -15,6 +15,7 @@ void update(float dTime) {
             
             auto [ent, pos, sprite, order, anim, sphere] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, PositionAnim, CircleColliderComponent>();
             sprite.Texture = loadTexture("textures/flowerProjectile.png");
+            dimFromTex(sprite);
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             int w, h;
             SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &w, &h);

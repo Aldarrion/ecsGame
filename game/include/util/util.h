@@ -12,6 +12,11 @@
 namespace eg {
 
 //-----------------------------------------------------------------------------
+void dimFromTex(SpriteComponent& sprite) {
+    SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &sprite.Width, &sprite.Height);
+}
+
+//-----------------------------------------------------------------------------
 SDL_Texture* loadTexture(const std::string& path) {
     auto texReg = ECS::reg().raw<TextureRegistry>();
     auto found = texReg->Registry.find(path);

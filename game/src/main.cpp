@@ -35,7 +35,7 @@ int runGame() {
         return 1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("Hello world", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
+    SDL_Window* window = SDL_CreateWindow("ECS game", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
     if (!window) {
         fprintf(stderr, "SDL window creation failded: %s\n", SDL_GetError());
         SDL_Quit();

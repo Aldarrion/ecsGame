@@ -38,7 +38,7 @@ void update() {
         for (int y = 0; y < MAP_HEIGHT; ++y) {
             for (int x = 0; x < MAP_WIDTH; ++x) {
                 int sortOrder = 0;
-                std::string texturePath = "textures/floor.png";
+                std::string texturePath = "textures/grass_tile.png";
                 if (x == 5 && (y == 0 || y == MAP_HEIGHT - 1)) {
                     texturePath = "textures/door.png";
                     auto [ent, pos, door] = ECS::reg().create<PositionComponent, DoorComponent>();
@@ -54,6 +54,8 @@ void update() {
                     continue;
 
                 auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+                sprite.Width = 64;
+                sprite.Height = 64;
                 pos.Pos = coordsToPos(x, y);
                 sprite.Texture = texture;
                 order.Order = sortOrder;
@@ -64,6 +66,7 @@ void update() {
             auto [playerEntity, pos, sprite, order, tag, capsule] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, Player_tag, CapsuleColliderComponent>();
             pos.Pos = coordsToPos(mapLoad.PlayerPos);
             sprite.Texture = loadTexture("textures/player.png");
+            dimFromTex(sprite);
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 10;
             capsule.Start = Vec2(4, -8);
@@ -75,9 +78,19 @@ void update() {
             auto [ent, pos, sprite, order, shooter] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder, FlowerShooter>();
             pos.Pos = coordsToPos(3, 6);
             sprite.Texture = loadTexture("textures/flowerShooter.png");
+            dimFromTex(sprite);
             SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
             order.Order = 5;
             shooter.TimeToShoot = FlowerShooter::TIME_TO_SHOOT;
+        }
+
+        {
+            auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+            pos.Pos = coordsToPos(4, 6);
+            sprite.Texture = loadTexture("textures/tree.png");
+            dimFromTex(sprite);
+            SDL_SetTextureBlendMode(sprite.Texture, SDL_BLENDMODE_BLEND);
+            order.Order = 5;
         }
     });
 

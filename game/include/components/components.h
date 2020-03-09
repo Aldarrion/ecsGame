@@ -37,6 +37,8 @@ struct PositionComponent {
 
 //-----------------------------------------------------------------------------
 struct SpriteComponent {
+    int Width{ 0 };
+    int Height{ 0 };
     SDL_Texture* Texture;
 };
 

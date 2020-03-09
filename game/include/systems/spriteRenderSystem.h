@@ -16,9 +16,7 @@ void update() {
     SDL_SetRenderDrawColor(rc->Renderer, 128, 128, 128, 255);
     
     ECS::reg().view<const SpriteComponent, const PositionComponent>().each([render = rc->Renderer](auto entity, const SpriteComponent& sprite, const PositionComponent& pos) {
-        int w, h;
-        SDL_QueryTexture(sprite.Texture, nullptr, nullptr, &w, &h);
-        SDL_Rect dst{ int(pos.Pos.x - w / 2.0f), int(pos.Pos.y - h / 2.0f), w, h };
+        SDL_Rect dst{ int(pos.Pos.x - sprite.Width / 2.0f), int(pos.Pos.y - sprite.Height / 2.0f), sprite.Width, sprite.Height };
         if (SDL_RenderCopy(render, sprite.Texture, nullptr, &dst) != 0) {
             fprintf(stderr, "%s\n", SDL_GetError());
         }
