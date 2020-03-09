@@ -17,16 +17,16 @@ void dimFromTex(SpriteComponent& sprite) {
 }
 
 //-----------------------------------------------------------------------------
-SDL_Texture* loadTexture(const std::string& path) {
+SDL_Texture* loadTexture(const char* path) {
     auto texReg = ECS::reg().raw<TextureRegistry>();
     auto found = texReg->Registry.find(path);
     
     if (found != texReg->Registry.end()) {
         return found->second;
     } else {
-        SDL_Surface* loadingSurface = IMG_Load(path.c_str());
+        SDL_Surface* loadingSurface = IMG_Load(path);
         if (!loadingSurface) {
-            fprintf(stderr, "Failed loading texture %s, error: %s\n", path.c_str(), IMG_GetError());
+            fprintf(stderr, "Failed loading texture %s, error: %s\n", path, IMG_GetError());
             return nullptr;
         }
 

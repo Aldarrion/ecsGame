@@ -8,15 +8,15 @@
 namespace eg {
 
 //-----------------------------------------------------------------------------
-bool isWallAt(const MapComponent& map, Vec2 pos) {
+bool isEmpty(const MapComponent& map, Vec2 pos) {
     Vec2Int coords(pos / TILE_SIZE);
-    for (int i = 0; i < map.Walls.size(); ++i) {
-        if (map.Walls[i] == coords) {
-            return true;
+    for (Vec2Int v : map.ImpassableTiles) {
+        if (v == coords) {
+            return false;
         }
     }
 
-    return false;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void keyUp(const SDL_KeyboardEvent& event) {
 }
 
 //-----------------------------------------------------------------------------
-constexpr float PLAYER_ANIM_TIME = 0.2f;
+constexpr float PLAYER_ANIM_TIME = 0.4f;
 
 //-----------------------------------------------------------------------------
 bool isKeyDown(SDL_Keycode key, const KeyboardStateComponent& prev, const KeyboardStateComponent& curr) {
@@ -101,6 +101,13 @@ void systemUpdate() {
 }
 
 //-----------------------------------------------------------------------------
+bool canMoveTo(Vec2 newPos, const MapComponent& map) {
+    return 
+        isEmpty(map, newPos) 
+        && isInBounds(newPos);
+}
+
+//-----------------------------------------------------------------------------
 void update(float dTime) {
     auto& keyboard = ECS::getSingleton<KeyboardStateComponent, Current_tag>();
     auto& prevKeyboard = ECS::getSingleton<KeyboardStateComponent, Previous_tag>();
@@ -128,7 +135,7 @@ void update(float dTime) {
         auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
         if (!playerAnim) {
             const Vec2 newPos(pos.Pos + posDiff * TILE_SIZE);
-            if (!isWallAt(*map, newPos) && isInBounds(newPos)) {
+            if (canMoveTo(newPos, *map)) {
                 // Player does not move now
                 ECS::reg().assign<PositionAnim>(playerEnt, pos.Pos, newPos, PLAYER_ANIM_TIME, 0.0f);
             }
@@ -140,7 +147,9 @@ void update(float dTime) {
             } else if (playerAnim->CurrentTime + dTime > playerAnim->Time) {
                 // Anim will end this frame, schedule a new one instead
                 const Vec2 newPos(playerAnim->End + posDiff * TILE_SIZE);
-                ECS::reg().replace<PositionAnim>(playerEnt, playerAnim->End, newPos, PLAYER_ANIM_TIME, -(playerAnim->CurrentTime + dTime - PLAYER_ANIM_TIME));
+                if (canMoveTo(newPos, *map)) {
+                    ECS::reg().replace<PositionAnim>(playerEnt, playerAnim->End, newPos, PLAYER_ANIM_TIME, -(playerAnim->CurrentTime + dTime - PLAYER_ANIM_TIME));
+                }
             }
         }
     }

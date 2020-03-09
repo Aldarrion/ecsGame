@@ -61,7 +61,7 @@ struct DoorComponent {
 //-----------------------------------------------------------------------------
 struct MapComponent {
     Vec2Int MapCoords;
-    std::vector<Vec2Int> Walls;
+    std::vector<Vec2Int> ImpassableTiles;
 };
 
 //-----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ struct PositionAnim {
 //-----------------------------------------------------------------------------
 struct FlowerShooter {
     static constexpr float TIME_TO_SHOOT{ 1.0f };
-    static constexpr Vec2 SHOT_START_POS{ -2.0f, -6.0f };
+    static constexpr Vec2 SHOT_START_POS{ 28 - 42 / 2.0f, 9 - 80 / 2.0f }; // 28, 9  -  42, 80
     //Vec2 Direction;
     float TimeToShoot;
 };

@@ -21,6 +21,7 @@ include_directories("game/include")
 
 add_executable(ecsGame ${GameSrc} ${GameHeaders} ${EnttHeaders})
 
+# /utf-8
 
 if (WIN32)
     target_link_libraries(ecsGame "${SDL_LIB_DIR}/SDL2.lib" "${SDL_LIB_DIR}/SDL2_image.lib" "${SDL_LIB_DIR}/SDL2main.lib")
@@ -56,4 +57,8 @@ set_property(TARGET ecsGame PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOUR
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244") # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # 'var' : conversion from 'size_t' to 'type', possible loss of data
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8") # To be able to compile utf-8 encoded files without BOM
+
+    add_definitions(/MP)
 endif(MSVC)

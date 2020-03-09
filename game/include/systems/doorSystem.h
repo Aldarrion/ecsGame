@@ -19,10 +19,17 @@ void update() {
             const auto& currentMap = ECS::reg().get<MapComponent>(*ECS::reg().view<MapComponent>().begin());
             auto [ent, mapInfo] = ECS::reg().create<MapLoadInfo>();
             mapInfo.MapCoords = currentMap.MapCoords + door.Direction;
-            mapInfo.PlayerPos = Vec2Int(
-                door.Direction.x == 0 ? doorPos.Pos.x / TILE_SIZE : doorPos.Pos.x / TILE_SIZE == 0 ? MAP_WIDTH - 2 : 1,
-                door.Direction.y == 0 ? doorPos.Pos.y / TILE_SIZE : doorPos.Pos.y / TILE_SIZE == 0 ? MAP_HEIGHT - 2 : 1
-            );
+            
+            mapInfo.PlayerPos = Vec2Int(1, 1);
+            if (door.Direction.x == 0)
+                mapInfo.PlayerPos.x = doorPos.Pos.x / TILE_SIZE;
+            else if (door.Direction.x == -1 && int(doorPos.Pos.x / TILE_SIZE) == 0)
+                mapInfo.PlayerPos.x = MAP_WIDTH - 2;
+
+            if (door.Direction.y == 0)
+                mapInfo.PlayerPos.y = doorPos.Pos.y / TILE_SIZE;
+            else if (door.Direction.y == -1 && int(doorPos.Pos.y / TILE_SIZE) == 0)
+                mapInfo.PlayerPos.y = MAP_HEIGHT - 2;
         }
     });
 }
