@@ -12,7 +12,7 @@ namespace eg {
 
 static constexpr int MAP_WIDTH = 12;
 static constexpr int MAP_HEIGHT = 9;
-static constexpr int TILE_SIZE = 64;
+static constexpr int TILE_SIZE = 128;
 static constexpr int TILE_HALF_SIZE = TILE_SIZE / 2;
 
 //-----------------------------------------------------------------------------

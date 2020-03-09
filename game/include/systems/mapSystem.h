@@ -54,8 +54,8 @@ void update() {
                     continue;
 
                 auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
-                sprite.Width = 64;
-                sprite.Height = 64;
+                sprite.Width = TILE_SIZE;
+                sprite.Height = TILE_SIZE;
                 pos.Pos = coordsToPos(x, y);
                 sprite.Texture = texture;
                 order.Order = sortOrder;
