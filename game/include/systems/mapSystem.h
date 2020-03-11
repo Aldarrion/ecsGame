@@ -32,43 +32,72 @@ void createTile(int x, int y, const char* texturePath, int sortOrder) {
 }
 
 //-----------------------------------------------------------------------------
-// " ← → ← ↓"
+void createRoad(int x, int y, const char* texturePath) {
+    createTile(x, y, texturePath, 1);
+    
+    // Roads at corners are not allowed
+    assert(x != 0 || y != 0);
+    assert(x != MAP_WIDTH - 1 || y != MAP_HEIGHT - 1);
+    
+    if (x == 0 || x == MAP_WIDTH - 1 || y == 0 || y == MAP_HEIGHT - 1) {
+        auto [ent, pos, door] = ECS::reg().create<PositionComponent, DoorComponent>();
+        pos.Pos = coordsToPos(x, y);
+
+        door.Direction = Vec2Int::ZERO();
+
+        if (x == 0)
+            door.Direction.x = -1;
+        else if (x == MAP_WIDTH - 1)
+            door.Direction.x = 1;
+
+        if (y == 0)
+            door.Direction.y = -1;
+        else if (y == MAP_HEIGHT - 1)
+            door.Direction.y = 1;
+
+        assert(door.Direction != Vec2Int::ZERO());
+    }
+}
+
+//-----------------------------------------------------------------------------
+//  ← → ← ↓ 
+//  ┌ ┐ └ ┘ ┤ ─ │ 
 const char16_t* mapDefs[][9] = {
     { // Start
-        u"xxxxxxxdxxxx",
-        u"x..........x",
-        u"x...→......x",
-        u"x..........x",
-        u"d..........x",
-        u"x..........x",
-        u"x..........x",
-        u"x..........x",
-        u"xxxxdxxxxxxx",
+        u"xxxxxxx│xxxx",
+        u"x......│...x",
+        u"x...→..└┐..x",
+        u"x......┌┘..x",
+        u"───────┤...x",
+        u"x......│...x",
+        u"x...┌──┘...x",
+        u"x...│......x",
+        u"xxxx│xxxxxxx",
     },
     { // L1
-        u"xxdxxxxxxxxx",
-        u"x..........x",
-        u"x..........x",
-        u"x.......x..x",
-        u"x..........x",
-        u"x..........x",
-        u"x..........x",
-        u"x..........x",
-        u"xxxxxxxdxxxx",
+        u"xxx│xxxxxxxx",
+        u"x..└┐......x",
+        u"x...│......x",
+        u"x...└──┐x..x",
+        u"x.....x└┐..x",
+        u"x.......│..x",
+        u"x......x│..x",
+        u"x......┌┘..x",
+        u"xxxxxxx│xxxx",
     },
     { // L2
         u"xxxxxxxxxxxx",
         u"x..........x",
         u"x..→.......x",
         u"x.......x..x",
-        u"x.......x..d",
+        u"x.......x..─",
         u"x..........x",
         u"x..........x",
         u"x..........x",
         u"xxxxxxxxxxxx",
     },
     { // L3
-        u"xxxxdxxxxxxx",
+        u"xxxx│xxxxxxx",
         u"x..........x",
         u"x..→.......x",
         u"x.......x..x",
@@ -81,13 +110,13 @@ const char16_t* mapDefs[][9] = {
     { // Witch
         u"xxxxxxxxxxxx",
         u"x..........x",
-        u"x..→.......x",
+        u"x..........x",
         u"x.......x..x",
         u"x.......x..x",
         u"x.......x..x",
         u"x.......x..x",
         u"x..........x",
-        u"xxdxxxxxxxxx",
+        u"xxx│xxxxxxxx",
     }
 };
 
@@ -144,12 +173,48 @@ void update() {
                     createTile(x, y, texturePath, sortOrder);
                 }
 
-                switch (map[y][x]) {
+                auto mapChar = map[y][x];
+                switch (mapChar) {
                     case u'x':
                     {
                         const char* texturePath = "textures/tree.png";
                         mapComp.ImpassableTiles.emplace_back(x, y);
                         createTile(x, y, texturePath, 1);
+                        break;
+                    }
+                    case u'│':
+                    {
+                        createRoad(x, y, "textures/roadVertical.png");
+                        break;
+                    }
+                    case u'─':
+                    {
+                        createRoad(x, y, "textures/roadHorizontal.png");
+                        break;
+                    }
+                    case u'┌':
+                    {
+                        createRoad(x, y, "textures/roadTopLeft.png");
+                        break;
+                    }
+                    case u'┐':
+                    {
+                        createRoad(x, y, "textures/roadTopRight.png");
+                        break;
+                    }
+                    case u'└':
+                    {
+                        createRoad(x, y, "textures/roadBottomLeft.png");
+                        break;
+                    }
+                    case u'┘':
+                    {
+                        createRoad(x, y, "textures/roadBottomRight.png");
+                        break;
+                    }
+                    case u'┤':
+                    {
+                        createRoad(x, y, "textures/roadVerticalLeft.png");
                         break;
                     }
                     case u'→':
@@ -164,27 +229,11 @@ void update() {
 
                         break;
                     }
-                    case u'd':
+                    case u'.':
+                        break; // Grass is already handled above - we put it on each tile now
+                    default:
                     {
-                        const char* texturePath = "textures/door.png";
-                        createTile(x, y, texturePath, 1);
-
-                        auto [ent, pos, door] = ECS::reg().create<PositionComponent, DoorComponent>();
-                        pos.Pos = coordsToPos(x, y);
-
-                        door.Direction = Vec2Int::ZERO();
-                        
-                        if (x == 0)
-                            door.Direction.x = -1;
-                        else if (x == MAP_WIDTH - 1)
-                            door.Direction.x = 1;
-                        
-                        if (y == 0)
-                            door.Direction.y = -1;
-                        else if (y == MAP_HEIGHT - 1)
-                            door.Direction.y = 1;
-
-
+                        assert(!"Invalid map character");
                         break;
                     }
                 }
