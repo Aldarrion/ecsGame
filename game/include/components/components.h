@@ -61,7 +61,6 @@ struct DoorComponent {
 //-----------------------------------------------------------------------------
 struct MapComponent {
     Vec2Int MapCoords;
-    std::vector<Vec2Int> ImpassableTiles;
 };
 
 //-----------------------------------------------------------------------------

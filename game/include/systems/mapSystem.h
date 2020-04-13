@@ -8,22 +8,25 @@ namespace eg {
 namespace mapSystem {
 
 //-----------------------------------------------------------------------------
-Vec2 coordsToPos(int x, int y) {
-    return Vec2(x * TILE_SIZE + TILE_HALF_SIZE, y * TILE_SIZE + TILE_HALF_SIZE);
-}
+enum class TileType {
+    None,
+    Impassable,
+    Pushable,
+};
 
 //-----------------------------------------------------------------------------
-Vec2 coordsToPos(Vec2Int vec) {
-    return coordsToPos(vec.x, vec.y);
-}
-
-//-----------------------------------------------------------------------------
-void createTile(int x, int y, const char* texturePath, int sortOrder) {
+void createTile(int x, int y, const char* texturePath, int sortOrder, TileType type) {
     SDL_Texture* texture = loadTexture(texturePath);
     if (!texture)
         return;
 
     auto [ent, pos, sprite, order] = ECS::reg().create<PositionComponent, SpriteComponent, RenderOrder>();
+
+    if (type == TileType::Impassable)
+        ECS::reg().assign<Impassable_tag>(ent);
+    else if (type == TileType::Pushable)
+        ECS::reg().assign<Pushable_tag>(ent);
+
     pos.Pos = coordsToPos(x, y);
     sprite.Texture = texture;
     dimFromTex(sprite);
@@ -33,7 +36,7 @@ void createTile(int x, int y, const char* texturePath, int sortOrder) {
 
 //-----------------------------------------------------------------------------
 void createRoad(int x, int y, const char* texturePath) {
-    createTile(x, y, texturePath, 1);
+    createTile(x, y, texturePath, 1, TileType::None);
     
     // Roads at corners are not allowed
     assert(x != 0 || y != 0);
@@ -69,7 +72,7 @@ const char16_t* mapDefs[][9] = {
         u"x...→..└┐..x",
         u"x......┌┘..x",
         u"───────┤...x",
-        u"x......│...x",
+        u"x..#...│...x",
         u"x...┌──┘...x",
         u"x...│......x",
         u"xxxx│xxxxxxx",
@@ -90,9 +93,9 @@ const char16_t* mapDefs[][9] = {
         u"x..........x",
         u"x..→.......x",
         u"x.......x..x",
-        u"x.......x..─",
+        u"x.......x..x",
         u"x..........x",
-        u"x..........x",
+        u"x.........#─",
         u"x..........x",
         u"xxxxxxxxxxxx",
     },
@@ -170,7 +173,7 @@ void update() {
                 {
                     int sortOrder = 0;
                     const char* texturePath = "textures/grass_tile.png";
-                    createTile(x, y, texturePath, sortOrder);
+                    createTile(x, y, texturePath, sortOrder, TileType::None);
                 }
 
                 auto mapChar = map[y][x];
@@ -178,8 +181,7 @@ void update() {
                     case u'x':
                     {
                         const char* texturePath = "textures/tree.png";
-                        mapComp.ImpassableTiles.emplace_back(x, y);
-                        createTile(x, y, texturePath, 1);
+                        createTile(x, y, texturePath, 1, TileType::Impassable);
                         break;
                     }
                     case u'│':
@@ -227,6 +229,12 @@ void update() {
                         order.Order = 5;
                         shooter.TimeToShoot = FlowerShooter::TIME_TO_SHOOT;
 
+                        break;
+                    }
+                    case u'#':
+                    {
+                        const char* texturePath = "textures/box.png";
+                        createTile(x, y, texturePath, 6, TileType::Pushable);
                         break;
                     }
                     case u'.':

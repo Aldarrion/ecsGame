@@ -8,6 +8,8 @@ namespace eg {
 using Player_tag = entt::tag<"player"_hs>;
 using Previous_tag = entt::tag<"previous"_hs>;
 using Current_tag = entt::tag<"current"_hs>;
+using Impassable_tag = entt::tag<"impassable"_hs>;
+using Pushable_tag = entt::tag<"pushable"_hs>;
 
 class ECS {
 public:

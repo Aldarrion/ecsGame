@@ -8,15 +8,17 @@
 namespace eg {
 
 //-----------------------------------------------------------------------------
-bool isEmpty(const MapComponent& map, Vec2 pos) {
-    Vec2Int coords(pos / TILE_SIZE);
-    for (Vec2Int v : map.ImpassableTiles) {
-        if (v == coords) {
-            return false;
+bool isImpassable(Vec2 pos) {
+    auto view = ECS::reg().view<Impassable_tag, PositionComponent>();
+
+    const Vec2Int coords = posToCoords(pos);
+    for (auto ent : view) {
+        auto& v = view.get<PositionComponent>(ent);
+        if (posToCoords(v.Pos) == coords) {
+            return true;
         }
     }
-
-    return true;
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -101,10 +103,36 @@ void systemUpdate() {
 }
 
 //-----------------------------------------------------------------------------
-bool canMoveTo(Vec2 newPos, const MapComponent& map) {
-    return 
-        isEmpty(map, newPos) 
-        && isInBounds(newPos);
+bool tryPush(Vec2 newPos, Vec2 dir) {
+    if (isImpassable(newPos) || !isInBounds(newPos))
+        return false;
+
+    auto view = ECS::reg().view<Pushable_tag, PositionComponent>(entt::exclude_t<PositionAnim>{});
+
+    Vec2Int coords = posToCoords(newPos);
+    for (auto ent : view) {
+        auto& v = view.get<PositionComponent>(ent);
+        if (coords == posToCoords(v.Pos)) {
+            if (tryPush(newPos + dir * TILE_SIZE, dir)) {
+                ECS::reg().assign<PositionAnim>(ent, newPos, newPos + dir * TILE_SIZE, PLAYER_ANIM_TIME, 0.0f);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+bool tryMoveTo(Vec2 newPos, Vec2 dir, const MapComponent& map) {
+    if (isImpassable(newPos) || !isInBounds(newPos)) {
+        return false;
+    }
+
+    bool pushable = tryPush(newPos, dir);
+    return pushable;
 }
 
 //-----------------------------------------------------------------------------
@@ -131,25 +159,26 @@ void update(float dTime) {
     else if (keyboard.SDown)
         posDiff.y += 1;
     
-    if (posDiff != Vec2::ZERO()) {
-        auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
-        if (!playerAnim) {
-            const Vec2 newPos(pos.Pos + posDiff * TILE_SIZE);
-            if (canMoveTo(newPos, *map)) {
-                // Player does not move now
-                ECS::reg().assign<PositionAnim>(playerEnt, pos.Pos, newPos, PLAYER_ANIM_TIME, 0.0f);
-            }
-        } else {
-            const Vec2 currentDir = (playerAnim->End - playerAnim->Start) / TILE_SIZE;
-            if (posDiff == -currentDir) {
-                // Canceling animation and moving back
-                ECS::reg().replace<PositionAnim>(playerEnt, playerAnim->End, playerAnim->Start, PLAYER_ANIM_TIME, PLAYER_ANIM_TIME - playerAnim->CurrentTime);
-            } else if (playerAnim->CurrentTime + dTime > playerAnim->Time) {
-                // Anim will end this frame, schedule a new one instead
-                const Vec2 newPos(playerAnim->End + posDiff * TILE_SIZE);
-                if (canMoveTo(newPos, *map)) {
-                    ECS::reg().replace<PositionAnim>(playerEnt, playerAnim->End, newPos, PLAYER_ANIM_TIME, -(playerAnim->CurrentTime + dTime - PLAYER_ANIM_TIME));
-                }
+    if (posDiff == Vec2::ZERO())
+      return;
+
+    auto playerAnim = ECS::reg().try_get<PositionAnim>(*ECS::reg().data<Player_tag>());
+    if (!playerAnim) {
+        const Vec2 newPos(pos.Pos + posDiff * TILE_SIZE);
+        if (tryMoveTo(newPos, posDiff, *map)) {
+            // Player does not move now
+            ECS::reg().assign<PositionAnim>(playerEnt, pos.Pos, newPos, PLAYER_ANIM_TIME, 0.0f);
+        }
+    } else {
+        const Vec2 currentDir = (playerAnim->End - playerAnim->Start) / TILE_SIZE;
+        if (posDiff == -currentDir) {
+            // Canceling animation and moving back
+            ECS::reg().replace<PositionAnim>(playerEnt, playerAnim->End, playerAnim->Start, PLAYER_ANIM_TIME, PLAYER_ANIM_TIME - playerAnim->CurrentTime);
+        } else if (playerAnim->CurrentTime + dTime > playerAnim->Time) {
+            // Anim will end this frame, schedule a new one instead
+            const Vec2 newPos(playerAnim->End + posDiff * TILE_SIZE);
+            if (tryMoveTo(newPos, posDiff, *map)) {
+                ECS::reg().replace<PositionAnim>(playerEnt, playerAnim->End, newPos, PLAYER_ANIM_TIME, -(playerAnim->CurrentTime + dTime - PLAYER_ANIM_TIME));
             }
         }
     }

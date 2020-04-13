@@ -40,4 +40,20 @@ SDL_Texture* loadTexture(const char* path) {
     }
 }
 
+//-----------------------------------------------------------------------------
+Vec2 coordsToPos(int x, int y) {
+    return Vec2(x * TILE_SIZE + TILE_HALF_SIZE, y * TILE_SIZE + TILE_HALF_SIZE);
+}
+
+//-----------------------------------------------------------------------------
+Vec2 coordsToPos(Vec2Int vec) {
+    return coordsToPos(vec.x, vec.y);
+}
+
+//-----------------------------------------------------------------------------
+Vec2Int posToCoords(Vec2 pos) {
+    Vec2Int coords(pos / TILE_SIZE);
+    return coords;
+}
+
 } // namespace eg
